@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>智慧校园助手 - 山东商业职业技术大学</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- 顶部状态栏与校园导航头 -->
+    <header class="app-header">
+        <div class="header-brand">
+            <span class="brand-badge">SICT</span>
+            <div class="brand-text">
+                <div class="brand-title">智慧校园助手</div>
+                <div class="brand-sub">山东商业职业技术大学</div>
+            </div>
+        </div>
+        <div class="header-user-status" id="header-user-btn" title="点击查看个人或切换登录">
+            <span id="header-user-avatar" class="header-avatar">李</span>
+            <span id="header-user-name" class="header-name">李晨阳</span>
+        </div>
+    </header>
+
+    <!-- 核心视图视口 -->
+    <main class="page-viewport">
+
+        <!-- 1. 课程表主页面 (Schedule) -->
+        <section id="page-schedule" class="tab-page active">
+            <div class="schedule-banner">
+                <div>
+                    <div class="schedule-banner-title">我的课程表</div>
+                    <div id="schedule-user-info" class="schedule-banner-desc">软件技术 · 软件2401班</div>
+                </div>
+                <div class="schedule-banner-actions">
+                    <button id="btn-open-export-modal" class="btn-banner-action" title="导出时光序标准课表">导出</button>
+                    <button id="btn-open-import-modal" class="btn-banner-action" title="导入时光序/通用课表">导入</button>
+
+                </div>
+            </div>
+
+            <!-- 自动静音与桌面小组件状态卡片 -->
+            <div class="widget-sync-card">
+                <div>
+                    <div style="font-size: 14px; font-weight: 600;">上课自动静音保护</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">检测到上课时间，端侧将自动切换为振动/静音模式</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="auto-mute-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- 星期快速切换 -->
+            <div class="week-selector">
+                <div class="day-chip" data-day="1"><div class="day-name">周一</div><div class="day-num">一</div></div>
+                <div class="day-chip" data-day="2"><div class="day-name">周二</div><div class="day-num">二</div></div>
+                <div class="day-chip" data-day="3"><div class="day-name">周三</div><div class="day-num">三</div></div>
+                <div class="day-chip" data-day="4"><div class="day-name">周四</div><div class="day-num">四</div></div>
+                <div class="day-chip" data-day="5"><div class="day-name">周五</div><div class="day-num">五</div></div>
+                <div class="day-chip" data-day="6"><div class="day-name">周六</div><div class="day-num">六</div></div>
+                <div class="day-chip" data-day="7"><div class="day-name">周日</div><div class="day-num">日</div></div>
+            </div>
+
+            <!-- 课程列表 -->
+            <div id="course-list-container" class="course-card-list"></div>
+        </section>
+
+        <!-- 2. 笔记共享广场 (Notes) -->
+        <section id="page-notes" class="tab-page">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;">
+                    <button class="note-filter-chip active" data-cat="all">全部笔记</button>
+                    <button class="note-filter-chip" data-cat="专业必修">专业必修</button>
+                    <button class="note-filter-chip" data-cat="基础学科">基础学科</button>
+                    <button class="note-filter-chip" data-cat="技术拓展">技术拓展</button>
+                </div>
+                <button id="btn-goto-note-edit" class="btn-glass" style="background: var(--primary-accent); color: #ffffff; border-color: var(--border-dark); white-space: nowrap; font-size: 11px; margin-left: 8px;">
+                    + 写笔记
+                </button>
+            </div>
+            <div id="notes-list-container"></div>
+        </section>
+
+        <!-- 3. 校园生活墙 (Wall) -->
+        <section id="page-wall" class="tab-page">
+            <div id="wall-list-container"></div>
+        </section>
+
+        <!-- 4. 校园即时沟通与群聊 (Chat - 支持群聊与私聊、同班同学列表与自主建群) -->
+        <section id="page-chat" class="tab-page">
+            <div class="chat-main-layout">
+                <!-- 左侧/上方会话导航栏与联系人列表 -->
+                <div class="chat-sidebar-panel">
+                    <div class="chat-sidebar-header">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px; font-weight: 800;">通讯录与会话</span>
+                            <button id="btn-open-create-group" class="btn-action" style="background: var(--text-main); color: #ffffff; padding: 2px 8px; font-size: 11px; border-radius: var(--geo-radius-pill);">
+                                + 新建群聊
+                            </button>
+                        </div>
+                        <!-- 快捷分类药丸：群聊 / 同班同学 / 全校通讯录 -->
+                        <div class="chat-filter-tabs">
+                            <button class="chat-filter-btn active" data-chat-filter="groups">群聊</button>
+                            <button class="chat-filter-btn" data-chat-filter="classmates">同班同学</button>
+                            <button class="chat-filter-btn" data-chat-filter="all_students">全部学生</button>
+                            <button class="chat-filter-btn" data-chat-filter="teachers">老师</button>
+                        </div>
+                    </div>
+                    <!-- 会话/联系人渲染容器 -->
+                    <div id="chat-session-list" class="chat-session-list-box"></div>
+                </div>
+
+                <!-- 消息对话窗口 -->
+                <div class="chat-window">
+                    <div class="chat-header">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button id="btn-chat-back" class="btn-action" style="display: none; font-size: 16px; font-weight: 800; border: 1.5px solid var(--border-dark); background: #f1f5f9; padding: 2px 10px;">
+                                ‹ 会话列表
+                            </button>
+                            <div>
+                                <div id="chat-active-title" style="font-weight: 800; font-size: 14px;">校园公共交流大厅</div>
+                                <div id="chat-active-desc" style="font-size: 11px; color: var(--text-muted);">文明发言 · 互助交流 · 聊天记录实时云端归档</div>
+                            </div>
+                        </div>
+                        <div id="chat-header-actions" style="display: flex; gap: 6px; align-items: center;">
+                            <span id="chat-member-summary" class="tag-badge" style="background: #eef2ff; color: var(--primary); font-size: 10px;">群聊</span>
+                        </div>
+                    </div>
+                    <div id="chat-messages-box" class="chat-messages-container"></div>
+                    <div class="chat-input-bar">
+                        <input type="text" id="input-chat-text" placeholder="输入消息内容，支持回车发送..." />
+                        <button class="btn-send" id="btn-chat-send">发送</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 个人中心与权限管理 (Profile) -->
+        <section id="page-profile" class="tab-page">
+            <!-- 个人卡片 -->
+            <div class="feed-card" style="text-align: center; padding: 24px 16px;">
+                <div id="profile-avatar" class="profile-text-avatar">李</div>
+                <h3 id="profile-name" style="font-size: 18px; font-weight: 700; margin-top: 8px;">李晨阳</h3>
+                <p id="profile-student-no" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">学号: 2024090123</p>
+                <p id="profile-college" style="font-size: 13px; color: var(--primary); margin-top: 4px;">信息技术学院 · 软件技术</p>
+                <p id="profile-class" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">2024级 · 软件2401班</p>
+                <div style="margin-top: 12px; display: flex; justify-content: center; gap: 8px;">
+                    <span id="profile-role-badge" class="tag-badge" style="background: #10b98120; color: #10b981; font-size: 12px; padding: 4px 12px;">在校生</span>
+                    <button id="btn-switch-account" class="tag-badge" style="border: none; background: #e0e7ff; color: var(--primary); cursor: pointer;">切换账号</button>
+                </div>
+            </div>
+
+            <!-- 管理员专属控制台卡片 (角色为 admin 时显示) -->
+            <div id="admin-panel-card" class="feed-card" style="display: none; border-color: #818cf8;">
+                <div class="feed-header">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <strong style="font-size: 14px; color: var(--primary);">教务与辅导员管理大屏</strong>
+                    </div>
+                    <span class="tag-badge" style="background: #fee2e2; color: #ef4444;">管理员权限</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0;">
+                    <div style="background: #f8fafc; padding: 10px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; color: var(--primary);">2</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">在册学生</div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 10px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; color: var(--success);">7</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">本周课程</div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 10px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; color: var(--warning);">1</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">置顶公告</div>
+                    </div>
+                </div>
+                <!-- 预设账号快速查看 -->
+                <div style="margin-bottom: 6px;">
+                    <span style="font-size: 12px; color: var(--text-muted);">本校账号管理列表：</span>
+                </div>
+                <div id="admin-account-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
+
+                <!-- 大数据控制台入口 -->
+                <a href="admin_dashboard.html" style="display: block; margin-top: 12px; text-decoration: none;">
+                    <button class="btn-primary-block" style="background: var(--text-main); color: #ffffff; border: 2px solid var(--text-main); box-shadow: 3px 3px 0px var(--primary-accent);">
+                        进入管理员大数据控制台
+                    </button>
+                </a>
+                <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 6px; text-align: center;">
+                    数据统计大屏 · 学生/笔记/帖子/消息多维可视化 (仅管理员可见)
+                </div>
+            </div>
+
+            <!-- 系统运行信息 -->
+            <div class="feed-card" style="padding: 0;">
+                <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+
+                    <span style="font-size: 13px;">参赛赛题</span>
+                    <span style="font-size: 12px; color: var(--text-muted);">华为云码道 (信息技术组)</span>
+                </div>
+                <div style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px;">客户端版本</span>
+                    <span style="font-size: 12px; color: var(--text-muted);">v1.2.0</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <button id="btn-logout" class="btn-primary-block" style="background: #fef2f2; color: var(--danger); border: 1px solid #fee2e2;">
+                    退出登录
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 浮动操作按钮 FAB -->
+    <button id="global-fab-btn" class="fab-btn">+</button>
+
+    <!-- 底部 Tabbar 导航栏 (纯文字与高可读性图标样式) -->
+    <nav class="bottom-tabbar">
+        <button class="tab-item active" data-tab="schedule">
+            <span class="tab-icon-text">课表</span>
+            <span class="tab-label">课程表</span>
+        </button>
+        <button class="tab-item" data-tab="notes">
+            <span class="tab-icon-text">笔记</span>
+            <span class="tab-label">笔记库</span>
+        </button>
+        <button class="tab-item" data-tab="wall">
+            <span class="tab-icon-text">广场</span>
+            <span class="tab-label">校园墙</span>
+        </button>
+        <button class="tab-item" data-tab="chat">
+            <span class="tab-icon-text">交流</span>
+            <span class="tab-label">群聊</span>
+        </button>
+        <button class="tab-item" data-tab="profile">
+            <span class="tab-icon-text">我的</span>
+            <span class="tab-label">个人</span>
+        </button>
+    </nav>
+
+    <!-- 弹窗 1：添加课程 -->
+    <div id="modal-add-course" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">
+                <span>添加新课程</span>
+                <button class="btn-icon btn-close-modal">✕</button>
+            </div>
+            <form id="form-add-course">
+                <div class="form-group">
+                    <label>课程名称 *</label>
+                    <input type="text" id="input-course-name" placeholder="例如: 移动互联应用开发" required />
+                </div>
+                <div class="form-group">
+                    <label>授课老师</label>
+                    <input type="text" id="input-course-teacher" placeholder="例如: 张老师" />
+                </div>
+                <div class="form-group">
+                    <label>上课教室 *</label>
+                    <input type="text" id="input-course-room" placeholder="例如: 信息楼 402 机房" required />
+                </div>
+                <div class="form-group">
+                    <label>星期 *</label>
+                    <select id="input-course-day">
+                        <option value="1">星期一</option>
+                        <option value="2">星期二</option>
+                        <option value="3">星期三</option>
+                        <option value="4">星期四</option>
+                        <option value="5">星期五</option>
+                        <option value="6">星期六</option>
+                        <option value="7">星期日</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>上课时间 *</label>
+                        <input type="time" id="input-course-start" value="08:00" required />
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>下课时间 *</label>
+                        <input type="time" id="input-course-end" value="09:40" required />
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary-block">保存并同步到桌面组件</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 弹窗 2：发布笔记 -->
+    <div id="modal-add-note" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">
+                <span>分享新笔记</span>
+                <button class="btn-icon btn-close-modal">✕</button>
+            </div>
+            <form id="form-add-note">
+                <div class="form-group">
+                    <label>笔记标题 *</label>
+                    <input type="text" id="input-note-title" placeholder="简述核心考点或知识点" required />
+                </div>
+                <div class="form-group">
+                    <label>所属分类 *</label>
+                    <select id="input-note-cat">
+                        <option value="专业必修">专业必修</option>
+                        <option value="基础学科">基础学科</option>
+                        <option value="技术拓展">技术拓展</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>标签 (空格分隔)</label>
+                    <input type="text" id="input-note-tags" placeholder="例如: 算法 考点 重点" />
+                </div>
+                <div class="form-group">
+                    <label>笔记内容 *</label>
+                    <textarea id="input-note-content" rows="5" placeholder="写下笔记核心内容与考点解析..." required></textarea>
+                </div>
+                <button type="submit" class="btn-primary-block">发布笔记</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 弹窗 3：发布校园墙 (以图文为主，支持多图上传与预览) -->
+    <div id="modal-add-post" class="modal-overlay">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="modal-title">
+                <span>发布校园图文动态</span>
+                <button class="btn-icon btn-close-modal">✕</button>
+            </div>
+            <form id="form-add-post">
+                <div class="form-group">
+                    <label>动态板块 *</label>
+                    <select id="input-post-type">
+                        <option value="confession">校园动态 (图文随手拍)</option>
+                        <option value="lost">寻物启事 (配图招领)</option>
+                        <option value="treehole">学习讨论 (笔记/实训)</option>
+                        <option value="market">二手闲置 (闲置转让)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>动态正文 *</label>
+                    <textarea id="input-post-content" rows="4" placeholder="分享校园生活、自习心得或寻物线索..." required></textarea>
+                </div>
+                <!-- 图文专属多媒体选区 -->
+                <div class="form-group">
+                    <label>动态配图 (支持本地多选或快捷选用校园实景)</label>
+                    <div class="post-uploader-box">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <input type="file" id="input-post-file" accept="image/*" multiple style="display: none;">
+                            <button type="button" id="btn-trigger-upload" class="preset-chip-btn" style="background: var(--text-main); color: #ffffff;">
+                                + 上传本地图片
+                            </button>
+                            <span style="font-size: 11px; color: var(--text-muted); align-self: center;">快捷校园配图：</span>
+                            <button type="button" class="preset-chip-btn" onclick="App.addPresetImageToDraft('sunset1')">博学楼暮色</button>
+                            <button type="button" class="preset-chip-btn" onclick="App.addPresetImageToDraft('sunset2')">银杏路林荫</button>
+                            <button type="button" class="preset-chip-btn" onclick="App.addPresetImageToDraft('sunset3')">中心湖晨曦</button>
+                            <button type="button" class="preset-chip-btn" onclick="App.addPresetImageToDraft('stylus')">自习室寻物</button>
+                            <button type="button" class="preset-chip-btn" onclick="App.addPresetImageToDraft('coding')">项目架构</button>
+                        </div>
+                        <!-- 缩略图预览列表 -->
+                        <div id="post-draft-thumbs" class="post-uploader-preview-grid"></div>
+                    </div>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="input-post-anon" style="width: auto;">
+                    <label for="input-post-anon" style="margin-bottom: 0; cursor: pointer;">匿名发布（不显示真实姓名）</label>
+                </div>
+                <button type="submit" class="btn-primary-block">发布图文动态</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 弹窗 3.1：创建自建群聊 (支持多选学生邀请进群) -->
+    <div id="modal-create-group" class="modal-overlay">
+        <div class="modal-content" style="max-height: 85vh; overflow-y: auto;">
+            <div class="modal-title">
+                <span>新建群聊</span>
+                <button class="btn-icon btn-close-modal">✕</button>
+            </div>
+            <form id="form-create-group">
+                <div class="form-group">
+                    <label>群聊名称 *</label>
+                    <input type="text" id="input-group-name" placeholder="例如：软件工程实训组、考研英语互助群..." required />
+                </div>
+                <div class="form-group">
+                    <label>选择并邀请学生成员 (可多选)</label>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">勾选即可加入新群组，创建后群聊信息将持久化归档：</div>
+                    <div id="create-group-member-checklist" style="max-height: 200px; overflow-y: auto; border: var(--geo-border); border-radius: var(--geo-radius-sm); padding: 8px; background: #fafaf9; display: flex; flex-direction: column; gap: 6px;"></div>
+                </div>
+                <button type="submit" class="btn-primary-block">确认创建群聊</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 弹窗 4：导出课程表 (时光序协议) -->
+    <div id="modal-export-schedule" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">
+                <span>导出课表 (时光序标准协议)</span>
+                <button class="btn-icon btn-close-modal">✕</button>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                已按照时光序（ShiGuangSchedule）与通用高校课表标准协议封装，可直接用于课表备份、班级共享或导入第三方课表应用。
+            </div>
+            <div class="form-group">
+                <label>导出的 JSON 数据预览</label>
+                <textarea id="export-json-preview" rows="8" readonly class="code-preview-box"></textarea>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-copy-export-json" class="btn-primary-block" style="flex: 1;">复制 JSON 文本</button>
+                <button id="btn-download-export-json" class="btn-secondary-block" style="flex: 1;">下载 .json 文件</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗 5：导入课程表 (时光序协议 / 通用 JSON) -->
+    <div id="modal-import-schedule" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">
+                <span>导入课表 (时光序/通用协议)</span>
+                <button class="btn-icon btn-close-modal">✕</button>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                支持读取本地 <code style="background:#e8e4dc; padding:1px 4px; border-radius:3px;">.json</code> 文件或直接粘贴时光序课表数据，解析后自动同步至系统桌面小组件与自动静音服务。
+            </div>
+            <div class="form-group">
+                <label>导入模式</label>
+                <div class="import-mode-selector">
+                    <label class="mode-radio-label">
+                        <input type="radio" name="import-mode" value="replace" checked>
+                        <span>覆盖当前课表（清空并替换）</span>
+                    </label>
+                    <label class="mode-radio-label">
+                        <input type="radio" name="import-mode" value="merge">
+                        <span>追加合并（保留现有，新课自动去重）</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>途径一：选择本地课表文件</label>
+                <input type="file" id="input-schedule-file" accept=".json,.txt" style="display: none;">
+                <div id="btn-trigger-file-upload" class="file-upload-card">
+                    <span id="file-upload-text">点击选择 .json 格式课表文件</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>途径二：或在此直接粘贴 JSON 文本</label>
+                <textarea id="input-import-json" rows="6" placeholder="请在此粘贴时光序导出的 JSON 字符串..."></textarea>
+            </div>
+            <div id="import-error-tip" class="status-alert-error" style="display: none;"></div>
+            <button id="btn-submit-import" class="btn-primary-block">解析并执行导入</button>
+        </div>
+    </div>
+
+    <!-- 弹窗 6：管理员用户操作审计日志大屏 (暂时注释保留，后续按需启用) -->
+    <!--
+    <div id="modal-user-logs" class="modal-overlay">
+        <div class="modal-content" style="max-height: 88vh;">
+            <div class="modal-title">
+                <span>用户行为操作审计大屏</span>
+                <button class="btn-icon btn-close-modal">✕</button>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                实时读取系统后端存储的 <code style="background:#e8e4dc; padding:1px 4px; border-radius:3px;">user_logs.csv</code>，支持查看特定账号（如小明、苏雨婷）的查看、评论、发布等全量轨迹。
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <input type="text" id="input-filter-log-account" placeholder="输入学号/工号检索（留空查看全部）" style="flex: 1; padding: 8px 12px; border: var(--geo-border); border-radius: var(--geo-radius-sm); font-size: 12px;">
+                <button id="btn-search-logs" class="btn-glass" style="padding: 8px 14px; font-size: 12px;">查询</button>
+            </div>
+            <div id="logs-list-container" style="max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <div style="text-align: center; color: #94a3b8; font-size: 12px; padding: 20px;">正在获取审计日志...</div>
+            </div>
+        </div>
+    </div>
+    -->
+
+    <!-- 弹窗 7：图片沉浸式大图预览 Lightbox -->
+    <div id="modal-image-lightbox" class="lightbox-modal">
+        <div class="lightbox-content-box">
+            <div class="lightbox-img-wrap">
+                <img id="lightbox-full-img" src="" alt="大图预览">
+            </div>
+            <div class="lightbox-footer">
+                <span id="lightbox-img-counter" style="font-size: 12px; font-weight: 700; color: var(--text-muted);">大图查看</span>
+                <button id="btn-close-lightbox" class="btn-action" style="font-size: 12px; font-weight: 800; border: 1.5px solid var(--border-dark); background: #f1f5f9; padding: 4px 12px;">关闭查看</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 业务脚本引入 -->
+    <script src="js/bridge.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

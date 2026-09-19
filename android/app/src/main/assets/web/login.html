@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>统一身份认证 - 登录</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background-color: #f5f2eb;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 20px 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 44px auto 0;
+        }
+
+        .login-brand {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-logo-box {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: #2d3142;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            border: 1.5px solid #2d3142;
+            box-shadow: 4px 4px 0px #e05a47;
+            margin-bottom: 14px;
+        }
+
+        .login-title {
+            font-size: 21px;
+            font-weight: 900;
+            color: #1e2029;
+            letter-spacing: -0.4px;
+        }
+
+        .login-sub {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 26px 22px;
+            border: 1.5px solid #2d3142;
+            box-shadow: 5px 5px 0px rgba(45, 49, 66, 0.25);
+        }
+
+        .role-tabs {
+            display: flex;
+            background: #f5f2eb;
+            padding: 4px;
+            border-radius: 12px;
+            border: 1.5px solid #2d3142;
+            margin-bottom: 24px;
+        }
+
+        .role-tab-btn {
+            flex: 1;
+            padding: 9px 0;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .role-tab-btn.active {
+            background: #2d3142;
+            color: #ffffff;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+        }
+
+        .input-wrapper {
+            margin-bottom: 18px;
+        }
+
+        .input-wrapper label {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            color: #1e2029;
+            margin-bottom: 6px;
+        }
+
+        .input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-box input {
+            width: 100%;
+            height: 46px;
+            padding: 0 54px 0 14px;
+            border: 1.5px solid #2d3142;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            background: #fafaf9;
+            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.04);
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .input-box input:focus {
+            border-color: #e05a47;
+            background: #ffffff;
+        }
+
+        .btn-toggle-pwd {
+            position: absolute;
+            right: 12px;
+            background: #f5f2eb;
+            border: 1px solid #2d3142;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #2d3142;
+            padding: 3px 8px;
+        }
+
+        .login-submit-btn {
+            width: 100%;
+            height: 48px;
+            background: #2d3142;
+            color: #ffffff;
+            border: 1.5px solid #2d3142;
+            box-shadow: 3px 3px 0px #e05a47;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            margin-top: 10px;
+        }
+
+        .login-submit-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        .login-footer {
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 32px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- 头部品牌 -->
+        <div class="login-brand">
+            <div class="login-logo-box">SICT</div>
+            <h1 class="login-title">智慧校园统一身份认证</h1>
+            <p class="login-sub">山东商业职业技术大学 · 移动终端系统</p>
+        </div>
+
+        <!-- 登录表单卡片 -->
+        <div class="login-card">
+            <!-- 角色切换 Tab -->
+            <div class="role-tabs">
+                <button type="button" id="tab-student" class="role-tab-btn active">在校学生</button>
+                <button type="button" id="tab-admin" class="role-tab-btn">教务 / 管理员</button>
+            </div>
+
+            <!-- 表单主体 -->
+            <form id="login-form">
+                <input type="hidden" id="login-role" value="student">
+                
+                <div class="input-wrapper">
+                    <label id="label-account">学号</label>
+                    <div class="input-box">
+                        <input type="text" id="input-account" placeholder="请输入学号" required autocomplete="username" />
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <label>登录密码</label>
+                    <div class="input-box">
+                        <input type="password" id="input-pwd" placeholder="请输入登录密码" required autocomplete="current-password" />
+                        <button type="button" id="btn-toggle-pwd" class="btn-toggle-pwd">显示</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 12px; color: #6b7280; font-weight: 600;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="checkbox" id="remember-me" checked style="width: auto;"> 记住登录状态
+                    </label>
+                    <a href="javascript:void(0)" onclick="alert('请联系学校教务处或信息中心重置密码')" style="color: #e05a47; text-decoration: none;">忘记密码</a>
+                </div>
+
+                <button type="submit" id="btn-submit-login" class="login-submit-btn">
+                    <span id="btn-text">登录</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 底部版权信息 -->
+    <div class="login-footer">
+        <p>山东商业职业技术大学 · 智慧校园移动终端平台</p>
+        <p>服务支持：信息网络中心</p>
+    </div>
+
+    <script src="js/bridge.js"></script>
+    <script src="js/data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const roleInput = document.getElementById('login-role');
+            const studentTab = document.getElementById('tab-student');
+            const adminTab = document.getElementById('tab-admin');
+            const labelAccount = document.getElementById('label-account');
+            const inputAccount = document.getElementById('input-account');
+            const inputPwd = document.getElementById('input-pwd');
+            const togglePwdBtn = document.getElementById('btn-toggle-pwd');
+            const form = document.getElementById('login-form');
+            const submitBtn = document.getElementById('btn-submit-login');
+            const btnText = document.getElementById('btn-text');
+
+            // 切换角色
+            const setRole = (role) => {
+                roleInput.value = role;
+                if (role === 'student') {
+                    studentTab.classList.add('active');
+                    adminTab.classList.remove('active');
+                    labelAccount.textContent = '学号';
+                    inputAccount.placeholder = '请输入学号';
+                } else {
+                    adminTab.classList.add('active');
+                    studentTab.classList.remove('active');
+                    labelAccount.textContent = '管理员工号';
+                    inputAccount.placeholder = '请输入教务/管理员工号';
+                }
+            };
+
+            studentTab.addEventListener('click', () => setRole('student'));
+            adminTab.addEventListener('click', () => setRole('admin'));
+
+            // 密码显隐切换
+            togglePwdBtn.addEventListener('click', () => {
+                const isPwd = inputPwd.type === 'password';
+                inputPwd.type = isPwd ? 'text' : 'password';
+                togglePwdBtn.textContent = isPwd ? '隐藏' : '显示';
+            });
+
+            // 异步提交登录（对接真实后端回环接口）
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const role = roleInput.value;
+                const accountNo = inputAccount.value.trim();
+                const password = inputPwd.value.trim();
+
+                if (!accountNo || !password) {
+                    alert('请输入账号与密码');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                btnText.textContent = '身份核验中...';
+
+                try {
+                    const res = await DataManager.loginAsync(accountNo, password, role);
+                    if (res.success) {
+                        const modeTip = res.mode === 'backend' ? ' (已通过后端表格哈希鉴权)' : '';
+                        JSBridge.showToast('登录成功' + modeTip);
+                        setTimeout(() => {
+                            window.location.replace('index.html');
+                        }, 300);
+                    } else {
+                        submitBtn.disabled = false;
+                        btnText.textContent = '登录';
+                        alert(res.message);
+                    }
+                } catch (err) {
+                    submitBtn.disabled = false;
+                    btnText.textContent = '登录';
+                    alert('登录请求发生异常: ' + err.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

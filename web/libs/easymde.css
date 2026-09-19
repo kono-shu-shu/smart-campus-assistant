@@ -1,0 +1,191 @@
+/**
+ * =========================================================================
+ * 开源项目引用声明 (Open Source Attribution):
+ * -------------------------------------------------------------------------
+ * 项目名称: EasyMDE / SimpleMDE - Markdown Editor (Styles)
+ * 官方仓库: https://github.com/Ionaru/easy-markdown-editor
+ * 初始作者: Next Step Webs, Inc. & Jeroen Akkerman
+ * 开源协议: MIT License
+ * 定制说明: 结合本项目「Soft Geometric Bold (柔和几何大胆风)」进行主题与交互升级
+ * =========================================================================
+ */
+
+.EasyMDEContainer {
+    display: block;
+    position: relative;
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+/* 顶部操作工具条 */
+.editor-toolbar {
+    position: relative;
+    opacity: 0.96;
+    user-select: none;
+    padding: 8px 10px;
+    border: var(--geo-border);
+    border-top-left-radius: var(--geo-radius-md);
+    border-top-right-radius: var(--geo-radius-md);
+    background: #ffffff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    box-shadow: var(--geo-shadow-sm);
+    z-index: 10;
+}
+
+.editor-toolbar button {
+    background: var(--bg-page);
+    border: 1.5px solid var(--border-dark);
+    color: var(--text-main);
+    text-align: center;
+    text-decoration: none !important;
+    height: 30px;
+    min-width: 32px;
+    padding: 0 8px;
+    margin: 0;
+    border-radius: var(--geo-radius-sm);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 800;
+    box-shadow: 1px 1px 0px rgba(45, 49, 66, 0.15);
+    transition: all 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.editor-toolbar button:hover {
+    background: #ffffff;
+    border-color: var(--primary-accent);
+}
+
+.editor-toolbar button:active,
+.editor-toolbar button.active {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: none;
+    transform: translate(1px, 1px);
+}
+
+.editor-toolbar .separator {
+    display: inline-block;
+    width: 0;
+    border-left: 1px solid #cbd5e1;
+    border-right: 1px solid #ffffff;
+    color: transparent;
+    text-indent: -10px;
+    margin: 0 4px;
+    height: 20px;
+}
+
+/* 编辑区与分栏容器 */
+.editor-wrapper {
+    display: flex;
+    width: 100%;
+    background: #ffffff;
+    border: var(--geo-border);
+    border-top: none;
+    border-bottom-left-radius: var(--geo-radius-md);
+    border-bottom-right-radius: var(--geo-radius-md);
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--geo-shadow-md);
+}
+
+.editor-textarea-panel {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+}
+
+.editor-textarea-field {
+    width: 100%;
+    height: 420px;
+    padding: 16px;
+    border: none;
+    outline: none;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text-main);
+    background: #ffffff;
+    resize: none;
+    box-sizing: border-box;
+}
+
+/* 实时分栏预览区 (Side-by-side) */
+.editor-preview-panel {
+    flex: 1;
+    min-width: 0;
+    height: 420px;
+    padding: 16px 20px;
+    background: #fbf9f5;
+    border-left: var(--geo-border);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+}
+
+.editor-preview-panel.active {
+    display: block;
+}
+
+/* 单独全量预览模式 */
+.editor-preview-full {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fbf9f5;
+    padding: 18px 22px;
+    overflow-y: auto;
+    z-index: 5;
+    display: none;
+}
+
+.editor-preview-full.active {
+    display: block;
+}
+
+/* 底部状态栏 */
+.editor-statusbar {
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-align: right;
+    background: #f8fafc;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* 全屏沉浸模式 */
+.EasyMDEContainer.fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    margin: 0 !important;
+    background: var(--bg-page);
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+}
+
+.EasyMDEContainer.fullscreen .editor-wrapper {
+    flex: 1;
+    height: calc(100vh - 100px);
+}
+
+.EasyMDEContainer.fullscreen .editor-textarea-field,
+.EasyMDEContainer.fullscreen .editor-preview-panel {
+    height: 100%;
+}

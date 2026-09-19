@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>笔记详情 - 智慧校园助手</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .detail-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+            padding-bottom: 90px;
+        }
+
+        .article-card {
+            background: #ffffff;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-lg);
+            padding: 22px;
+            box-shadow: var(--geo-shadow-lg);
+            margin-bottom: 20px;
+        }
+
+        .article-header {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .article-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.35;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .author-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: var(--geo-radius-pill);
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            border: 1.5px solid var(--border-dark);
+        }
+
+        .article-body .md-h1 { font-size: 20px; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 6px; margin: 18px 0 12px; }
+        .article-body .md-h2 { font-size: 17px; font-weight: 800; border-left: 4px solid var(--primary-accent); padding-left: 8px; margin: 16px 0 10px; }
+        .article-body .md-h3 { font-size: 15px; font-weight: 700; margin: 14px 0 8px; }
+        .article-body .md-p { font-size: 14px; line-height: 1.75; color: var(--text-main); margin-bottom: 12px; }
+        .article-body .md-blockquote { border-left: 4px solid #cbd5e1; background: #f8fafc; padding: 10px 14px; margin: 14px 0; color: #475569; border-radius: 0 6px 6px 0; font-size: 13px; }
+        .article-body .inline-code { background: #f1f5f9; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; border: 1px solid #e2e8f0; }
+        .article-body .code-block-wrapper { position: relative; background: #1e293b; color: #f8fafc; padding: 14px; border-radius: var(--geo-radius-sm); overflow-x: auto; margin: 14px 0; border: var(--geo-border); }
+        .article-body .code-lang-badge { position: absolute; top: 6px; right: 10px; font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+        .article-body .code-block { font-family: Consolas, monospace; font-size: 12px; line-height: 1.5; }
+        .article-body .md-table-wrap { overflow-x: auto; margin: 14px 0; }
+        .article-body .md-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .article-body .md-table th, .article-body .md-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+        .article-body .md-table th { background: #f1f5f9; font-weight: 700; }
+        .article-body .markdown-hr { border: none; border-top: 2px dashed #cbd5e1; margin: 20px 0; }
+        .article-body .task-item { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-bottom: 6px; }
+        .article-body .task-box { font-weight: bold; color: var(--primary-accent); }
+
+        /* 评论区域 */
+        .comments-section {
+            background: #ffffff;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-lg);
+            padding: 20px;
+            box-shadow: var(--geo-shadow-md);
+        }
+
+        .comments-header {
+            font-size: 16px;
+            font-weight: 800;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-content-box {
+            flex: 1;
+        }
+
+        .comment-author-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .comment-text {
+            font-size: 13px;
+            color: var(--text-main);
+            line-height: 1.5;
+            background: #fbfaf8;
+            padding: 8px 12px;
+            border-radius: var(--geo-radius-sm);
+            border: 1px solid #e2e8f0;
+            margin-top: 4px;
+        }
+
+        /* 底部发表评论浮动栏 */
+        .floating-comment-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-top: var(--geo-border);
+            padding: 12px 16px;
+            display: flex;
+            gap: 10px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+        }
+
+        .comment-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-pill);
+            font-size: 13px;
+            outline: none;
+            background: var(--bg-page);
+        }
+
+        .comment-input:focus {
+            background: #ffffff;
+            border-color: var(--primary-accent);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部导航头 -->
+    <header class="app-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="btn-back" class="btn-icon" title="返回主界面">‹</button>
+            <div>
+                <div class="brand-title" style="font-size: 15px;">课堂笔记详情</div>
+                <div class="brand-sub" style="font-size: 10px;">Markdown 原生渲染与知识共享</div>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="btn-delete-note" class="btn-action" style="display: none; color: #ef4444; background: #fee2e2; border: 1.5px solid #fca5a5; padding: 4px 10px; font-size: 11px;">
+                删除笔记
+            </button>
+            <button id="btn-write-new" class="btn-glass" style="font-size: 11px;">
+                + 写笔记
+            </button>
+        </div>
+    </header>
+
+    <div class="detail-container">
+
+        <!-- 笔记主体卡片 -->
+        <article class="article-card">
+            <div class="article-header">
+                <div id="note-category-badge" class="tag-badge" style="background: #e0e7ff; color: var(--primary); font-size: 11px; margin-bottom: 8px;">专业必修</div>
+                <h1 id="note-title" class="article-title">加载中...</h1>
+                <div class="article-meta">
+                    <div class="author-info">
+                        <div id="note-author-avatar" class="author-avatar">李</div>
+                        <div>
+                            <div id="note-author-name" style="font-size: 13px; font-weight: 700;">李晨阳</div>
+                            <div id="note-time" style="font-size: 11px; color: var(--text-muted);">2026-03-20</div>
+                        </div>
+                    </div>
+                    <div id="note-tags-container" style="display: flex; gap: 6px;"></div>
+                </div>
+            </div>
+
+            <!-- Markdown 渲染正文 -->
+            <div id="note-markdown-body" class="article-body">
+                <div style="text-align: center; padding: 40px; color: #94a3b8;">正在加载笔记正文...</div>
+            </div>
+        </article>
+
+        <!-- 评论列表卡片 -->
+        <section class="comments-section">
+            <div class="comments-header">
+                <span>研讨与交流评论</span>
+                <span id="comments-count-badge" class="tag-badge" style="background: #f1f5f9; color: var(--text-muted);">0 条</span>
+            </div>
+
+            <div id="comments-list-box">
+                <div style="text-align: center; padding: 24px; color: #94a3b8; font-size: 12px;">
+                    暂无评论，留下你的见解吧~
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- 底部固定输入评论条 -->
+    <div class="floating-comment-bar">
+        <input type="text" id="input-comment-text" class="comment-input" placeholder="写下你的疑问或考点见解..." />
+        <button id="btn-submit-comment" class="btn-glass" style="background: var(--primary); color: #ffffff; border-color: var(--border-dark); padding: 8px 16px;">
+            发送
+        </button>
+    </div>
+
+    <!-- 脚本引入 (包含开源 Marked 解析器) -->
+    <script src="js/bridge.js"></script>
+    <script src="js/data.js"></script>
+    <script src="libs/marked.min.js"></script>
+    <script src="js/markdown.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const noteId = urlParams.get('id') || 'n1';
+            const currentUser = DataManager.getCurrentUser();
+
+            // 返回按钮：确保返回至笔记共享广场页面
+            document.getElementById('btn-back').addEventListener('click', () => {
+                window.location.href = 'index.html?tab=notes';
+            });
+
+            // 新建笔记跳转
+            document.getElementById('btn-write-new').addEventListener('click', () => {
+                window.location.href = 'note_edit.html';
+            });
+
+            // 1. 获取笔记与评论数据
+            let noteData = null;
+            let comments = [];
+
+            try {
+                const res = await fetch(`http://8.220.210.247:3000/api/notes/${noteId}`);
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.code === 200 && json.data) {
+                        noteData = json.data;
+                        comments = json.data.comments || [];
+                    }
+                }
+            } catch (err) {
+                console.warn('后端离线，从本地缓存加载:', err);
+            }
+
+            // 本地兜底查找（从服务器重新获取）
+            if (!noteData) {
+                const localNotes = await DataManager.getNotes();
+                noteData = localNotes.find(n => n.id === noteId) || localNotes[0];
+                comments = [];
+            }
+
+            if (!noteData) {
+                document.getElementById('note-title').textContent = '未找到指定笔记';
+                document.getElementById('note-markdown-body').innerHTML = '<div style="color:#ef4444; padding:20px;">笔记已删除或不存在</div>';
+                return;
+            }
+
+            // 2. 【暂缓功能已注释】行为记录功能已按需注释保留，后续启用时取消注释即可
+            /*
+            if (currentUser && currentUser.isLoggedIn) {
+                try {
+                    fetch('http://8.220.210.247:3000/api/logs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            accountNo: currentUser.accountNo,
+                            userName: currentUser.name,
+                            role: currentUser.role,
+                            actionType: 'VIEW_NOTE',
+                            targetId: noteId,
+                            targetTitle: noteData.title,
+                            detail: `${currentUser.name} 查阅了笔记《${noteData.title}》的正文详情`
+                        })
+                    }).catch(e => { });
+                } catch (e) { }
+            }
+            */
+
+            // 3. 渲染笔记元信息与 Markdown 正文
+            document.getElementById('note-title').textContent = noteData.title;
+            document.getElementById('note-category-badge').textContent = noteData.category || '专业必修';
+            document.getElementById('note-author-name').textContent = noteData.authorName || noteData.author || '在校生';
+            document.getElementById('note-author-avatar').textContent = (noteData.authorName || noteData.author || '李').charAt(0);
+            document.getElementById('note-time').textContent = noteData.createdAt || noteData.time || '刚刚';
+
+            const tagsContainer = document.getElementById('note-tags-container');
+            if (noteData.tags && Array.isArray(noteData.tags)) {
+                tagsContainer.innerHTML = noteData.tags.map(t => `<span class="tag-badge" style="background:#f1f5f9; color:#475569; font-size:10px;">#${t}</span>`).join('');
+            }
+
+            // 渲染正文
+            const bodyEl = document.getElementById('note-markdown-body');
+            bodyEl.innerHTML = MarkdownParser.render(noteData.content || '（笔记正文为空）');
+
+            // 检查当前用户是否有删除权限（管理员或作者本人）
+            const deleteBtn = document.getElementById('btn-delete-note');
+            const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'teacher');
+            const isOwner = currentUser && ((currentUser.accountNo && (noteData.authorAccount === currentUser.accountNo || noteData.authorId === currentUser.accountNo)) || (noteData.authorName === currentUser.name || noteData.author === currentUser.name));
+
+            if (deleteBtn && (isAdmin || isOwner)) {
+                deleteBtn.style.display = 'inline-flex';
+                deleteBtn.addEventListener('click', async () => {
+                    if (!confirm(`确定要删除这篇笔记《${noteData.title}》吗？删除后将无法恢复。`)) {
+                        return;
+                    }
+
+                    try {
+                        const delRes = await fetch(`http://8.220.210.247:3000/api/notes/${noteId}`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                role: currentUser.role,
+                                accountNo: currentUser.accountNo,
+                                name: currentUser.name
+                            })
+                        });
+                        if (delRes.ok) {
+                            DataManager.deleteNote(noteId, currentUser);
+                            JSBridge.showToast('笔记已成功删除');
+                            setTimeout(() => {
+                                window.location.href = 'index.html?tab=notes';
+                            }, 300);
+                            return;
+                        }
+                    } catch (e) { }
+
+                    // 离线/本地处理
+                    const localRes = DataManager.deleteNote(noteId, currentUser);
+                    if (localRes.success) {
+                        JSBridge.showToast('笔记已删除 (本地)');
+                        setTimeout(() => {
+                            window.location.href = 'index.html?tab=notes';
+                        }, 300);
+                    } else {
+                        JSBridge.showToast(localRes.message);
+                    }
+                });
+            }
+
+            // 4. 渲染评论列表
+            const renderComments = () => {
+                const countBadge = document.getElementById('comments-count-badge');
+                const listBox = document.getElementById('comments-list-box');
+                countBadge.textContent = `${comments.length} 条`;
+
+                if (comments.length === 0) {
+                    listBox.innerHTML = `
+                        <div style="text-align: center; padding: 24px; color: #94a3b8; font-size: 12px;">
+                            暂无评论，写下你的见解抢沙发吧~
+                        </div>
+                    `;
+                    return;
+                }
+
+                listBox.innerHTML = comments.map(c => `
+                    <div class="comment-item">
+                        <div class="author-avatar" style="width:26px; height:26px; font-size:11px; background:#4338ca;">
+                            ${(c.authorName || '学').charAt(0)}
+                        </div>
+                        <div class="comment-content-box">
+                            <div class="comment-author-line">
+                                <strong style="color: var(--text-main);">${c.authorName || '在校同学'}</strong>
+                                <span style="color: var(--text-muted); font-size: 11px;">${c.time || '刚刚'}</span>
+                            </div>
+                            <div class="comment-text">${MarkdownParser.escapeHtml(c.content)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            renderComments();
+
+            // 5. 发表评论
+            const submitCommentBtn = document.getElementById('btn-submit-comment');
+            const commentInput = document.getElementById('input-comment-text');
+
+            const doComment = async () => {
+                if (!currentUser || !currentUser.isLoggedIn) {
+                    JSBridge.showToast('请先登录账号后发表评论');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const content = commentInput.value.trim();
+                if (!content) {
+                    JSBridge.showToast('评论内容不能为空');
+                    return;
+                }
+
+                // 提交后端写入数据库并自动触发 COMMENT_NOTE 日志记录
+                try {
+                    const res = await fetch(`http://8.220.210.247:3000/api/notes/${noteId}/comments`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            authorName: currentUser.name,
+                            authorAccount: currentUser.accountNo,
+                            role: currentUser.role,
+                            content: content
+                        })
+                    });
+                    const resData = await res.json();
+                    if (resData.code === 200 && resData.data) {
+                        comments.push(resData.data);
+                        commentInput.value = '';
+                        renderComments();
+                        JSBridge.showToast('评论成功并记录审计日志！');
+                        return;
+                    }
+                } catch (err) {
+                    console.warn('后端通信失败，执行本地模拟:', err);
+                }
+
+                // 本地临时展示
+                comments.push({
+                    authorName: currentUser.name,
+                    content: content,
+                    time: '刚刚'
+                });
+                commentInput.value = '';
+                renderComments();
+                JSBridge.showToast('评论发表成功！');
+            };
+
+            submitCommentBtn.addEventListener('click', doComment);
+            commentInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') doComment();
+            });
+        });
+    </script>
+</body>
+</html>

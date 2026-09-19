@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">智慧校园助手</string>
+    <string name="widget_name">今日课表与静音</string>
+    <string name="widget_empty_course">今日暂无更多课程，好好休息吧！</string>
+    <string name="widget_btn_open">进入应用</string>
+    <string name="widget_status_normal">状态：正常</string>
+    <string name="widget_status_muted">🔕 课堂静音守护中</string>
+</resources>

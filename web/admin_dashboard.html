@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>管理员大数据控制台 - 智慧校园助手</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .dashboard-body {
+            background: var(--bg-page);
+            min-height: 100vh;
+        }
+
+        .dash-container {
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .dash-section-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 18px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dash-section-title::before {
+            content: '';
+            width: 6px;
+            height: 16px;
+            background: var(--primary-accent);
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        /* 核心指标卡片 */
+        .stats-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-md);
+            box-shadow: var(--geo-shadow-md);
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0px var(--border-dark);
+        }
+
+        .stat-card:active {
+            transform: translateY(1px);
+            box-shadow: 1px 1px 0px var(--border-dark);
+        }
+
+        .stat-card-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .stat-card-value {
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
+        }
+
+        .stat-card-detail {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-card-drill {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 10px;
+            font-weight: 800;
+            background: #f1f5f9;
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* 微缩趋势条 */
+        .mini-trend-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            margin-top: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .mini-trend-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .mini-trend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            font-weight: 700;
+        }
+
+        /* 数据维度概览面板 */
+        .dim-overview-panel {
+            background: #ffffff;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-lg);
+            box-shadow: var(--geo-shadow-md);
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .dim-overview-panel:hover {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0px var(--border-dark);
+        }
+
+        .dim-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .dim-panel-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .dim-panel-arrow {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .dim-mini-bars {
+            display: flex;
+            gap: 4px;
+            align-items: flex-end;
+            height: 36px;
+        }
+
+        .dim-mini-bar-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .dim-mini-bar {
+            width: 100%;
+            min-height: 4px;
+            border-radius: 2px 2px 0 0;
+            transition: height 0.4s ease;
+        }
+
+        .dim-mini-bar-label {
+            font-size: 8px;
+            color: var(--text-muted);
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        /* 功能入口卡片 */
+        .action-entry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .action-entry-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .action-entry-card {
+            background: #ffffff;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-lg);
+            box-shadow: var(--geo-shadow-md);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-entry-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0px var(--border-dark);
+        }
+
+        .action-entry-card:active {
+            transform: translateY(1px);
+            box-shadow: 1px 1px 0px var(--border-dark);
+        }
+
+        .action-entry-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--geo-radius-sm);
+            border: 1.5px solid var(--border-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .action-entry-info {
+            flex: 1;
+        }
+
+        .action-entry-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .action-entry-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .action-entry-arrow {
+            font-size: 16px;
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        /* 数据流水线标识 */
+        .pipeline-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .pipeline-badge {
+            font-size: 10px;
+            font-weight: 800;
+            background: #dcfce7;
+            color: #14532d;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .dash-loading-tip {
+            text-align: center;
+            padding: 32px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .inline-legend-tip {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <!-- 顶部导航头 -->
+    <header class="app-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="btn-back-home" class="btn-icon" title="返回主界面">‹</button>
+            <div>
+                <div class="brand-title" style="font-size: 15px;">管理员大数据控制台</div>
+                <div class="brand-sub" style="font-size: 10px;">数据采集 · 存储 · 统计 · 可视化</div>
+            </div>
+        </div>
+        <span id="admin-id-badge" class="tag-badge" style="background: #fee2e2; color: #b91c1c;">管理员</span>
+    </header>
+
+    <div class="dash-container">
+
+        <!-- 数据流水线说明 -->
+        <div style="background:#ffffff; border:var(--geo-border); border-radius:var(--geo-radius-lg); box-shadow:var(--geo-shadow-md); padding:12px 16px; margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <div style="font-size:13px; font-weight:800;">大数据工程技术流水线</div>
+                    <div class="inline-legend-tip" style="margin-top:4px;">
+                        匿名汇聚学生账号表、笔记库、校园墙、评论与聊天消息等全域数据，
+                        经结构化存储与多维聚合统计后，以可视化图表实时呈现。
+                    </div>
+                </div>
+                <div class="pipeline-badges">
+                    <span class="pipeline-badge">采集 Ingest</span>
+                    <span class="pipeline-badge">存储 Storage</span>
+                    <span class="pipeline-badge">聚合 Aggregation</span>
+                    <span class="pipeline-badge">可视化 Viz</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 核心指标卡片 -->
+        <div class="dash-section-title">核心指标总览</div>
+        <div class="stats-card-grid">
+            <div class="stat-card" onclick="AdminDash.goDetail('students')">
+                <span class="stat-card-drill">查看分布</span>
+                <div class="stat-card-label">在校学生人数</div>
+                <div class="stat-card-value" id="stat-student-count">--</div>
+                <div class="stat-card-detail">
+                    <span style="width:8px;height:8px;border-radius:2px;background:var(--primary);display:inline-block;"></span>
+                    来源于学生账号表
+                </div>
+            </div>
+            <div class="stat-card" onclick="AdminDash.goDetail('admins')">
+                <span class="stat-card-drill">查看明细</span>
+                <div class="stat-card-label">教工管理员</div>
+                <div class="stat-card-value" id="stat-admin-count">--</div>
+                <div class="stat-card-detail">
+                    <span style="width:8px;height:8px;border-radius:2px;background:#b45309;display:inline-block;"></span>
+                    管理端权限账号
+                </div>
+            </div>
+            <div class="stat-card" onclick="AdminDash.goDetail('notes')">
+                <span class="stat-card-drill">分类占比</span>
+                <div class="stat-card-label">共享笔记总数</div>
+                <div class="stat-card-value" id="stat-note-count">--</div>
+                <div class="stat-card-detail">
+                    <span style="width:8px;height:8px;border-radius:2px;background:#7c3aed;display:inline-block;"></span>
+                    含公开评论研讨
+                </div>
+            </div>
+            <div class="stat-card" onclick="AdminDash.goDetail('posts')">
+                <span class="stat-card-drill">板块分布</span>
+                <div class="stat-card-label">校园墙帖子</div>
+                <div class="stat-card-value" id="stat-post-count">--</div>
+                <div class="stat-card-detail">
+                    <span style="width:8px;height:8px;border-radius:2px;background:#e05a47;display:inline-block;"></span>
+                    图文动态与置顶公告
+                </div>
+            </div>
+            <div class="stat-card" onclick="AdminDash.goDetail('messages')">
+                <span class="stat-card-drill">消息占比</span>
+                <div class="stat-card-label">聊天记录留痕</div>
+                <div class="stat-card-value" id="stat-chat-count">--</div>
+                <div class="stat-card-detail">
+                    <span style="width:8px;height:8px;border-radius:2px;background:#059669;display:inline-block;"></span>
+                    群聊 + 私聊全量归档
+                </div>
+            </div>
+        </div>
+
+        <!-- 微缩数据维度概览（点击跳转独立图表页） -->
+        <div class="dash-section-title">数据维度微缩概览</div>
+
+        <div class="dim-overview-panel" onclick="AdminDash.goDetail('students')">
+            <div class="dim-panel-header">
+                <span class="dim-panel-title">学生 · 学院分布</span>
+                <span class="dim-panel-arrow">查看完整图表 ›</span>
+            </div>
+            <div id="mini-college" class="dim-mini-bars"></div>
+        </div>
+
+        <div class="dim-overview-panel" onclick="AdminDash.goDetail('notes')">
+            <div class="dim-panel-header">
+                <span class="dim-panel-title">笔记 · 分类分布</span>
+                <span class="dim-panel-arrow">查看完整图表 ›</span>
+            </div>
+            <div id="mini-notes" class="dim-mini-bars"></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="dim-overview-panel" onclick="AdminDash.goDetail('posts')">
+                <div class="dim-panel-header">
+                    <span class="dim-panel-title">校园墙 · 板块占比</span>
+                    <span class="dim-panel-arrow">›</span>
+                </div>
+                <div id="mini-posts" class="dim-mini-bars"></div>
+            </div>
+            <div class="dim-overview-panel" onclick="AdminDash.goDetail('messages')">
+                <div class="dim-panel-header">
+                    <span class="dim-panel-title">聊天 · 群聊/私聊</span>
+                    <span class="dim-panel-arrow">›</span>
+                </div>
+                <div id="mini-messages" class="dim-mini-bars"></div>
+            </div>
+        </div>
+
+        <!-- 管理功能入口 -->
+        <div class="dash-section-title">管理功能入口</div>
+        <div class="action-entry-grid">
+            <div class="action-entry-card" onclick="window.location.href='student_manage.html'">
+                <div class="action-entry-icon" style="background:#fef3c7; color:#92400e;">学</div>
+                <div class="action-entry-info">
+                    <div class="action-entry-title">学生档案与账号管理</div>
+                    <div class="action-entry-desc">添加 / 删除 / 修改学生信息与密码</div>
+                </div>
+                <span class="action-entry-arrow">›</span>
+            </div>
+            <div class="action-entry-card" onclick="window.location.href='index.html'">
+                <div class="action-entry-icon" style="background:#dbeafe; color:#1e40af;">首</div>
+                <div class="action-entry-info">
+                    <div class="action-entry-title">返回智慧校园主页</div>
+                    <div class="action-entry-desc">查看笔记 / 校园墙 / 课程表 / 聊天</div>
+                </div>
+                <span class="action-entry-arrow">›</span>
+            </div>
+        </div>
+
+        <div style="height:40px;"></div>
+    </div>
+
+    <script src="js/bridge.js"></script>
+    <script src="js/data.js"></script>
+    <script>
+        const AdminDash = {
+            rawStats: null,
+            palette: ['#4338ca', '#7c3aed', '#059669', '#d97706', '#e05a47', '#0ea5e9', '#db2777', '#65a30d', '#0284c7', '#9333ea'],
+
+            init: function () {
+                const user = DataManager.getCurrentUser();
+                if (!user || !user.isLoggedIn) {
+                    JSBridge.showToast('请先登录');
+                    window.location.replace('login.html');
+                    return;
+                }
+                if (user.role !== 'admin' && user.role !== 'teacher') {
+                    JSBridge.showToast('无权限访问管理员控制台');
+                    window.location.replace('index.html');
+                    return;
+                }
+
+                document.getElementById('btn-back-home').addEventListener('click', () => {
+                    window.location.href = 'index.html';
+                });
+
+                this.loadStats();
+            },
+
+            loadStats: async function () {
+                try {
+                    const res = await fetch('http://8.220.210.247:3000/api/admin/stats');
+                    if (res.ok) {
+                        const json = await res.json();
+                        if (json.code === 200 && json.data) {
+                            this.rawStats = json.data;
+                            this.renderAll();
+                            return;
+                        }
+                    }
+                } catch (e) { /* 后端离线，走本地兜底 */ }
+
+                this.rawStats = await this.buildLocalFallbackStats();
+                this.renderAll();
+                JSBridge.showToast('后端离线，当前展示本地数据统计');
+            },
+
+            buildLocalFallbackStats: async function () {
+                const accounts = DataManager.getAccounts ? DataManager.getAccounts() : [];
+                const students = accounts.filter(a => a.role === 'student');
+                const admins = accounts.filter(a => a.role === 'admin' || a.role === 'teacher');
+                const notes = await DataManager.getNotes();
+                const posts = await DataManager.getPosts();
+                const messages = await (DataManager.getChatMessages ? DataManager.getChatMessages() : Promise.resolve([]));
+
+                const groupBy = (list, keyFn) => {
+                    const map = {};
+                    list.forEach(item => {
+                        const k = keyFn(item);
+                        map[k] = (map[k] || 0) + 1;
+                    });
+                    return map;
+                };
+
+                return {
+                    overview: {
+                        studentCount: students.length,
+                        adminCount: admins.length,
+                        noteCount: notes.length,
+                        commentCount: 0,
+                        postCount: posts.length,
+                        chatGroupCount: 0,
+                        chatMessageCount: messages.length,
+                        groupMessageCount: messages.filter(m => !((m.sessionKey || '').startsWith('private:'))).length,
+                        privateMessageCount: messages.filter(m => (m.sessionKey || '').startsWith('private:')).length
+                    },
+                    dimensions: {
+                        studentsByCollege: groupBy(students, s => s.college || '其他学院'),
+                        studentsByClass: groupBy(students, s => s.classGrade || '未分班'),
+                        notesByCategory: groupBy(notes, n => n.category || '未分类'),
+                        postsByType: groupBy(posts, p => p.typeLabel || '校园动态')
+                    }
+                };
+            },
+
+            renderAll: function () {
+                const s = this.rawStats;
+                if (!s || !s.overview) return;
+
+                const o = s.overview;
+                document.getElementById('stat-student-count').textContent = o.studentCount || 0;
+                document.getElementById('stat-admin-count').textContent = o.adminCount || 0;
+                document.getElementById('stat-note-count').textContent = o.noteCount || 0;
+                document.getElementById('stat-post-count').textContent = o.postCount || 0;
+                document.getElementById('stat-chat-count').textContent = o.chatMessageCount || 0;
+
+                this.renderMiniBars('mini-college', s.dimensions.studentsByCollege);
+                this.renderMiniBars('mini-notes', s.dimensions.notesByCategory);
+                this.renderMiniBars('mini-posts', s.dimensions.postsByType);
+                this.renderMiniBars('mini-messages', {
+                    '群聊': o.groupMessageCount || 0,
+                    '私聊': o.privateMessageCount || 0
+                });
+            },
+
+            // 微缩柱状条渲染（纯 DOM，无 Canvas）
+            renderMiniBars: function (containerId, dataMap) {
+                const box = document.getElementById(containerId);
+                if (!box) return;
+
+                const entries = Object.entries(dataMap || {}).filter(([, v]) => v > 0);
+                if (!entries.length) {
+                    box.innerHTML = '<div style="font-size:11px;color:var(--text-muted);padding:8px 0;">暂无数据</div>';
+                    return;
+                }
+
+                const maxVal = Math.max(...entries.map(([, v]) => v), 1);
+                const topN = entries.slice(0, 8); // 最多展示8项
+
+                box.innerHTML = topN.map(([label, value], i) => {
+                    const h = Math.max(4, Math.round((value / maxVal) * 32));
+                    const color = this.palette[i % this.palette.length];
+                    const shortLabel = label.length > 5 ? label.slice(0, 5) + '..' : label;
+                    return `
+                        <div class="dim-mini-bar-item">
+                            <div class="dim-mini-bar" style="height:${h}px; background:${color};"></div>
+                            <div class="dim-mini-bar-label" title="${label}">${shortLabel}</div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            // 跳转到独立数据维度详情页
+            goDetail: function (dim) {
+                window.location.href = `admin_stats_detail.html?dim=${dim}`;
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            AdminDash.init();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Install Gradle 8.5
+      run: |
+        wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip
+        unzip -q gradle-8.5-bin.zip -d $HOME
+        echo "$HOME/gradle-8.5/bin" >> $GITHUB_PATH
+
+    - name: Build Debug APK
+      env:
+        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        ANDROID_HOME: /usr/local/lib/android/sdk
+      run: gradle assembleDebug --no-daemon -x lint
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: campus-app-debug
+        path: app/build/outputs/apk/debug/*.apk
+        if-no-files-found: error

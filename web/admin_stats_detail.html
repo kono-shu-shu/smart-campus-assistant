@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>数据维度详情 - 智慧校园助手</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .detail-body {
+            background: var(--bg-page);
+            min-height: 100vh;
+        }
+
+        .detail-container {
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .chart-panel {
+            background: #ffffff;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-lg);
+            box-shadow: var(--geo-shadow-md);
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        .chart-panel-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-panel-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .chart-canvas-wrap {
+            width: 100%;
+            position: relative;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            display: block;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .legend-color-block {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            border: 1px solid var(--border-dark);
+        }
+
+        /* 数据明细列表 */
+        .data-detail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafaf9;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--geo-radius-sm);
+            padding: 10px 12px;
+        }
+
+        .detail-row-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+            min-width: 80px;
+        }
+
+        .detail-row-bar {
+            flex: 1;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+
+        .detail-row-bar-fill {
+            height: 100%;
+            background: var(--primary-accent);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .detail-row-value {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .detail-row-pct {
+            font-size: 11px;
+            color: var(--text-muted);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .empty-state {
+            padding: 40px 16px;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .dim-switch-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .dim-tab {
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            border: 1.5px solid var(--border-dark);
+            border-radius: var(--geo-radius-sm);
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            color: var(--text-main);
+        }
+
+        .dim-tab:hover {
+            transform: translateY(-1px);
+        }
+
+        .dim-tab.active {
+            background: var(--text-main);
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="detail-body">
+
+    <!-- 顶部导航 -->
+    <header class="chat-custom-navbar" style="background:#ffffff; border-bottom:var(--geo-border); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button onclick="window.location.href='admin_dashboard.html'" class="btn-geo" style="padding:6px 12px; font-size:12px; background:#ffffff;">‹ 返回控制台</button>
+            <h1 id="pageTitle" style="font-size:15px; font-weight:800; margin:0; color:var(--text-main);">数据维度详情</h1>
+        </div>
+        <span id="adminBadge" class="tag-badge" style="background:#fee2e2; color:#b91c1c; font-weight:800;">管理员</span>
+    </header>
+
+    <div class="detail-container">
+        <!-- 维度切换标签 -->
+        <div class="dim-switch-tabs">
+            <button class="dim-tab" data-dim="students" onclick="switchDim('students')">学生分布</button>
+            <button class="dim-tab" data-dim="notes" onclick="switchDim('notes')">笔记分类</button>
+            <button class="dim-tab" data-dim="posts" onclick="switchDim('posts')">校园墙板块</button>
+            <button class="dim-tab" data-dim="messages" onclick="switchDim('messages')">聊天消息</button>
+        </div>
+
+        <!-- 图表渲染区域 -->
+        <div id="chartArea">
+            <div class="empty-state">正在加载数据...</div>
+        </div>
+
+        <div style="height:40px;"></div>
+    </div>
+
+    <script src="js/bridge.js"></script>
+    <script src="js/data.js"></script>
+    <script>
+        const StatsDetail = {
+            rawStats: null,
+            currentDim: 'students',
+            palette: ['#4338ca', '#7c3aed', '#059669', '#d97706', '#e05a47', '#0ea5e9', '#db2777', '#65a30d', '#0284c7', '#9333ea'],
+            resizeTimer: null,
+
+            init: function () {
+                // 路由守卫
+                const user = DataManager.getCurrentUser();
+                if (!user || !user.isLoggedIn || (user.role !== 'admin' && user.role !== 'teacher')) {
+                    JSBridge.showToast('无权限访问');
+                    window.location.replace('login.html');
+                    return;
+                }
+
+                // 从 URL 参数读取维度
+                const params = new URLSearchParams(window.location.search);
+                const dim = params.get('dim');
+                if (dim && ['students', 'notes', 'posts', 'messages'].includes(dim)) {
+                    this.currentDim = dim;
+                }
+
+                // 标记当前激活的 tab
+                document.querySelectorAll('.dim-tab').forEach(tab => {
+                    if (tab.dataset.dim === this.currentDim) {
+                        tab.classList.add('active');
+                    }
+                });
+
+                // 注册 resize 自适应重绘
+                window.addEventListener('resize', () => {
+                    clearTimeout(this.resizeTimer);
+                    this.resizeTimer = setTimeout(() => {
+                        this.renderCharts();
+                    }, 150);
+                });
+
+                this.loadStats();
+            },
+
+            loadStats: async function () {
+                try {
+                    const res = await fetch('http://8.220.210.247:3000/api/admin/stats');
+                    if (res.ok) {
+                        const json = await res.json();
+                        if (json.code === 200 && json.data) {
+                            this.rawStats = json.data;
+                            this.renderCharts();
+                            return;
+                        }
+                    }
+                } catch (e) { /* 后端离线 */ }
+
+                this.rawStats = await this.buildLocalFallbackStats();
+                this.renderCharts();
+                JSBridge.showToast('后端离线，当前展示本地数据统计');
+            },
+
+            buildLocalFallbackStats: async function () {
+                const accounts = DataManager.getAccounts ? DataManager.getAccounts() : [];
+                const students = accounts.filter(a => a.role === 'student');
+                const admins = accounts.filter(a => a.role === 'admin' || a.role === 'teacher');
+                const notes = await DataManager.getNotes();
+                const posts = await DataManager.getPosts();
+                const messages = await (DataManager.getChatMessages ? DataManager.getChatMessages() : Promise.resolve([]));
+
+                const groupBy = (list, keyFn) => {
+                    const map = {};
+                    list.forEach(item => {
+                        const k = keyFn(item);
+                        map[k] = (map[k] || 0) + 1;
+                    });
+                    return map;
+                };
+
+                return {
+                    overview: {
+                        studentCount: students.length,
+                        adminCount: admins.length,
+                        noteCount: notes.length,
+                        commentCount: 0,
+                        postCount: posts.length,
+                        chatGroupCount: 0,
+                        chatMessageCount: messages.length,
+                        groupMessageCount: messages.filter(m => !((m.sessionKey || '').startsWith('private:'))).length,
+                        privateMessageCount: messages.filter(m => (m.sessionKey || '').startsWith('private:')).length
+                    },
+                    dimensions: {
+                        studentsByCollege: groupBy(students, s => s.college || '其他学院'),
+                        studentsByClass: groupBy(students, s => s.classGrade || '未分班'),
+                        notesByCategory: groupBy(notes, n => n.category || '未分类'),
+                        postsByType: groupBy(posts, p => p.typeLabel || '校园动态')
+                    }
+                };
+            },
+
+            renderCharts: function () {
+                const s = this.rawStats;
+                if (!s || !s.overview) return;
+
+                const area = document.getElementById('chartArea');
+                const dim = this.currentDim;
+
+                if (dim === 'students') {
+                    this.renderStudentsDim(area, s);
+                } else if (dim === 'notes') {
+                    this.renderNotesDim(area, s);
+                } else if (dim === 'posts') {
+                    this.renderPostsDim(area, s);
+                } else if (dim === 'messages') {
+                    this.renderMessagesDim(area, s);
+                }
+            },
+
+            // 学生维度：学院分布柱状图 + 班级分布柱状图 + 明细列表
+            renderStudentsDim: function (area, s) {
+                document.getElementById('pageTitle').textContent = '学生维度 · 学院与班级分布';
+
+                const collegeData = s.dimensions.studentsByCollege || {};
+                const classData = s.dimensions.studentsByClass || {};
+                const total = s.overview.studentCount || 0;
+
+                area.innerHTML = `
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>学生 · 学院分布 (柱状图)</span>
+                            <span class="chart-panel-sub">总计 ${total} 人</span>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="chart-college" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>学生 · 班级分布 (柱状图)</span>
+                            <span class="chart-panel-sub">总计 ${total} 人</span>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="chart-class" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>学院分布明细列表</span>
+                        </div>
+                        <div id="detail-college" class="data-detail-list"></div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>班级分布明细列表</span>
+                        </div>
+                        <div id="detail-class" class="data-detail-list"></div>
+                    </div>
+                `;
+
+                this.drawBarChart('chart-college', collegeData);
+                this.drawBarChart('chart-class', classData);
+                this.renderDetailList('detail-college', collegeData, total);
+                this.renderDetailList('detail-class', classData, total);
+            },
+
+            // 笔记维度：分类分布柱状图 + 明细列表
+            renderNotesDim: function (area, s) {
+                document.getElementById('pageTitle').textContent = '笔记维度 · 分类分布';
+
+                const noteData = s.dimensions.notesByCategory || {};
+                const total = s.overview.noteCount || 0;
+
+                area.innerHTML = `
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>笔记 · 分类分布 (柱状图)</span>
+                            <span class="chart-panel-sub">总计 ${total} 篇</span>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="chart-notes" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>笔记分类明细列表</span>
+                        </div>
+                        <div id="detail-notes" class="data-detail-list"></div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>笔记互动统计</span>
+                        </div>
+                        <div class="data-detail-list">
+                            <div class="detail-row">
+                                <span class="detail-row-name">笔记总数</span>
+                                <div class="detail-row-bar"><div class="detail-row-bar-fill" style="width:100%;"></div></div>
+                                <span class="detail-row-value">${total}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-row-name">公开评论</span>
+                                <div class="detail-row-bar"><div class="detail-row-bar-fill" style="width:${total ? Math.round((s.overview.commentCount || 0) / total * 100) : 0}%;"></div></div>
+                                <span class="detail-row-value">${s.overview.commentCount || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                this.drawBarChart('chart-notes', noteData);
+                this.renderDetailList('detail-notes', noteData, total);
+            },
+
+            // 校园墙维度：板块占比环形图 + 明细列表
+            renderPostsDim: function (area, s) {
+                document.getElementById('pageTitle').textContent = '校园墙维度 · 板块占比';
+
+                const postData = s.dimensions.postsByType || {};
+                const total = s.overview.postCount || 0;
+
+                area.innerHTML = `
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>校园墙 · 板块占比 (环形图)</span>
+                            <span class="chart-panel-sub">总计 ${total} 帖</span>
+                        </div>
+                        <div class="chart-canvas-wrap" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                            <canvas id="chart-posts" class="chart-canvas" style="max-width:260px;"></canvas>
+                            <div id="legend-posts" class="chart-legend" style="flex-direction:column; gap:8px; flex:1; min-width:160px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>板块分布明细列表</span>
+                        </div>
+                        <div id="detail-posts" class="data-detail-list"></div>
+                    </div>
+                `;
+
+                this.drawDonutChart('chart-posts', postData, 'legend-posts', '帖子板块');
+                this.renderDetailList('detail-posts', postData, total);
+            },
+
+            // 聊天维度：群聊/私聊占比环形图 + 私聊会话明细 + 发言者排行
+            renderMessagesDim: function (area, s) {
+                document.getElementById('pageTitle').textContent = '聊天维度 · 群聊与私聊全量统计';
+
+                const groupCount = s.overview.groupMessageCount || 0;
+                const privateCount = s.overview.privateMessageCount || 0;
+                const total = s.overview.chatMessageCount || 0;
+                const groupCnt = s.overview.chatGroupCount || 0;
+                const privateSessionCount = s.overview.privateSessionCount || 0;
+                const groupSessionCount = s.overview.groupSessionCount || 0;
+
+                const msgData = { '群聊消息': groupCount, '私聊消息': privateCount };
+                const senderMap = s.dimensions.messagesBySender || {};
+                const privateSessions = s.dimensions.privateSessions || [];
+
+                // 私聊会话明细 HTML
+                const privateSessionRows = privateSessions.length ? privateSessions.map(sess => {
+                    const participants = sess.participants && sess.participants.length ? sess.participants.join(' ↔ ') : '未知';
+                    return `
+                        <div class="detail-row">
+                            <span class="detail-row-name" style="min-width:auto; max-width:180px; font-size:11px; word-break:break-all;">${participants}</span>
+                            <div class="detail-row-bar"><div class="detail-row-bar-fill" style="width:${privateCount ? Math.round(sess.messageCount / privateCount * 100) : 0}%; background:#059669;"></div></div>
+                            <span class="detail-row-value">${sess.messageCount}</span>
+                            <span class="detail-row-pct">${sess.lastTime ? sess.lastTime.slice(5, 16) : '--'}</span>
+                        </div>
+                    `;
+                }).join('') : '<div class="empty-state">暂无私聊会话记录</div>';
+
+                area.innerHTML = `
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>聊天消息 · 群聊 / 私聊占比 (环形图)</span>
+                            <span class="chart-panel-sub">总计 ${total} 条</span>
+                        </div>
+                        <div class="chart-canvas-wrap" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                            <canvas id="chart-messages" class="chart-canvas" style="max-width:260px;"></canvas>
+                            <div id="legend-messages" class="chart-legend" style="flex-direction:column; gap:8px; flex:1; min-width:160px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>消息类型明细列表</span>
+                        </div>
+                        <div id="detail-messages" class="data-detail-list"></div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>会话概览统计</span>
+                        </div>
+                        <div class="data-detail-list">
+                            <div class="detail-row">
+                                <span class="detail-row-name">消息总数</span>
+                                <div class="detail-row-bar"><div class="detail-row-bar-fill" style="width:100%;"></div></div>
+                                <span class="detail-row-value">${total}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-row-name">群聊会话数</span>
+                                <div class="detail-row-bar"><div class="detail-row-bar-fill" style="width:${total ? Math.min(100, Math.round(groupSessionCount / Math.max(total, 1) * 100)) : 0}%; background:#4338ca;"></div></div>
+                                <span class="detail-row-value">${groupSessionCount}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-row-name">私聊会话数</span>
+                                <div class="detail-row-bar"><div class="detail-row-bar-fill" style="width:${total ? Math.min(100, Math.round(privateSessionCount / Math.max(total, 1) * 100)) : 0}%; background:#059669;"></div></div>
+                                <span class="detail-row-value">${privateSessionCount}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-row-name">现存群组</span>
+                                <div class="detail-row-bar"><div class="detail-row-bar-fill" style="width:${total ? Math.min(100, Math.round(groupCnt / Math.max(total, 1) * 100)) : 0}%;"></div></div>
+                                <span class="detail-row-value">${groupCnt}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>私聊会话明细 (参与者 · 消息数 · 最近时间)</span>
+                            <span class="chart-panel-sub">${privateSessionCount} 个私聊会话</span>
+                        </div>
+                        <div class="data-detail-list">${privateSessionRows}</div>
+                    </div>
+
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">
+                            <span>活跃发言者排行</span>
+                        </div>
+                        <div id="detail-senders" class="data-detail-list"></div>
+                    </div>
+                `;
+
+                this.drawDonutChart('chart-messages', msgData, 'legend-messages', '消息类型');
+                this.renderDetailList('detail-messages', msgData, total);
+                this.renderDetailList('detail-senders', senderMap, total);
+            },
+
+            // 柱状图绘制（自适应 DPR + resize）
+            drawBarChart: function (canvasId, dataMap) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.getBoundingClientRect();
+                const W = rect.width || 600;
+                const H = 240; // 固定逻辑高度
+
+                canvas.width = W * dpr;
+                canvas.height = H * dpr;
+                canvas.style.height = H + 'px';
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, W, H);
+
+                const entries = Object.entries(dataMap || {}).filter(([, v]) => v > 0);
+                if (!entries.length) {
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '13px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('暂无数据', W / 2, H / 2);
+                    return;
+                }
+
+                const maxVal = Math.max(...entries.map(([, v]) => v), 1);
+                const padL = 50, padB = 32, padT = 16, padR = 14;
+                const chartW = W - padL - padR;
+                const chartH = H - padT - padB;
+                const n = entries.length;
+                const barGap = 8;
+                const barW = Math.min(56, Math.max(20, (chartW - barGap * (n - 1)) / n));
+
+                // 网格线 + Y 轴刻度
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1;
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'right';
+                const gridCount = 4;
+                for (let g = 0; g <= gridCount; g++) {
+                    const y = padT + chartH - (chartH * g / gridCount);
+                    ctx.beginPath();
+                    ctx.moveTo(padL, y);
+                    ctx.lineTo(W - padR, y);
+                    ctx.stroke();
+                    const label = Math.round(maxVal * g / gridCount);
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(String(label), padL - 6, y);
+                }
+
+                // 柱体绘制
+                const totalBarW = n * barW + (n - 1) * barGap;
+                const startX = padL + Math.max(0, (chartW - totalBarW) / 2);
+
+                entries.forEach(([label, value], i) => {
+                    const x = startX + i * (barW + barGap);
+                    const h = Math.max(4, chartH * value / maxVal);
+                    const y = padT + chartH - h;
+                    const color = this.palette[i % this.palette.length];
+
+                    // 柱体
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x, y, barW, h);
+                    // 高光层
+                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                    ctx.fillRect(x, y, barW, Math.min(8, h));
+
+                    // 数值标签
+                    ctx.fillStyle = '#334155';
+                    ctx.font = 'bold 10px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(String(value), x + barW / 2, y - 3);
+
+                    // X 轴标签（自适应截断）
+                    ctx.fillStyle = '#475569';
+                    ctx.font = '10px sans-serif';
+                    ctx.textBaseline = 'top';
+                    const maxChars = Math.max(3, Math.floor(barW / 8));
+                    let shortLabel = label.length > maxChars ? label.slice(0, maxChars) + '..' : label;
+                    ctx.fillText(shortLabel, x + barW / 2, padT + chartH + 6);
+                });
+            },
+
+            // 环形图绘制（自适应 DPR + resize）
+            drawDonutChart: function (canvasId, dataMap, legendId, unit) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.getBoundingClientRect();
+                const W = rect.width || 260;
+                const H = 240;
+
+                canvas.width = W * dpr;
+                canvas.height = H * dpr;
+                canvas.style.height = H + 'px';
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, W, H);
+
+                const entries = Object.entries(dataMap || {}).filter(([, v]) => v > 0);
+                const total = entries.reduce((acc, [, v]) => acc + v, 0);
+
+                // 图例渲染
+                const legendBox = document.getElementById(legendId);
+                if (legendBox) {
+                    legendBox.innerHTML = entries.map(([label, value], i) => {
+                        const pct = total ? ((value / total) * 100).toFixed(1) : '0.0';
+                        return `
+                            <div class="legend-item">
+                                <span class="legend-color-block" style="background:${this.palette[i % this.palette.length]};"></span>
+                                <span>${label}</span>
+                                <span style="font-weight:800;color:var(--text-main);">${value}</span>
+                                <span style="color:#94a3b8;">${pct}%</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                if (!entries.length) {
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '13px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('暂无数据', W / 2, H / 2);
+                    return;
+                }
+
+                const cx = W / 2, cy = H / 2;
+                const outerR = Math.min(W, H) / 2 - 10;
+                const innerR = outerR * 0.62;
+                let startAngle = -Math.PI / 2;
+
+                entries.forEach(([label, value], i) => {
+                    const angle = (value / total) * Math.PI * 2;
+                    const color = this.palette[i % this.palette.length];
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, outerR, startAngle, startAngle + angle);
+                    ctx.arc(cx, cy, innerR, startAngle + angle, startAngle, true);
+                    ctx.closePath();
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    startAngle += angle;
+                });
+
+                // 中心文本
+                ctx.fillStyle = '#111827';
+                ctx.font = '800 22px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(String(total), cx, cy - 8);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(unit || '总计', cx, cy + 14);
+            },
+
+            // 明细列表渲染
+            renderDetailList: function (containerId, dataMap, total) {
+                const box = document.getElementById(containerId);
+                if (!box) return;
+
+                const entries = Object.entries(dataMap || {}).filter(([, v]) => v > 0);
+                if (!entries.length) {
+                    box.innerHTML = '<div class="empty-state">暂无数据</div>';
+                    return;
+                }
+
+                const maxVal = Math.max(...entries.map(([, v]) => v), 1);
+
+                box.innerHTML = entries.map(([label, value], i) => {
+                    const pct = maxVal ? Math.round((value / maxVal) * 100) : 0;
+                    const sharePct = total ? ((value / total) * 100).toFixed(1) : '0.0';
+                    const color = this.palette[i % this.palette.length];
+                    return `
+                        <div class="detail-row">
+                            <span class="detail-row-name">${label}</span>
+                            <div class="detail-row-bar"><div class="detail-row-bar-fill" style="width:${pct}%; background:${color};"></div></div>
+                            <span class="detail-row-value">${value}</span>
+                            <span class="detail-row-pct">${sharePct}%</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        };
+
+        function switchDim(dim) {
+            StatsDetail.currentDim = dim;
+            document.querySelectorAll('.dim-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.dim === dim);
+            });
+            // 更新 URL 参数（不刷新页面）
+            const newUrl = `admin_stats_detail.html?dim=${dim}`;
+            window.history.replaceState({}, '', newUrl);
+            StatsDetail.renderCharts();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            StatsDetail.init();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>撰写 Markdown 笔记 - 智慧校园助手</title>
+    <!-- 全局几何大胆风与主题样式 -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- 开源 Markdown 编辑器 (EasyMDE / SimpleMDE) 样式定制 -->
+    <link rel="stylesheet" href="libs/easymde.css">
+    <style>
+        .editor-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* 渲染出的 Markdown 内容基础规范 */
+        .preview-content .md-h1 { font-size: 20px; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 6px; margin: 14px 0 10px; }
+        .preview-content .md-h2 { font-size: 17px; font-weight: 800; border-left: 4px solid var(--primary-accent); padding-left: 8px; margin: 14px 0 8px; }
+        .preview-content .md-h3 { font-size: 15px; font-weight: 700; margin: 12px 0 6px; }
+        .preview-content .md-p { font-size: 13.5px; line-height: 1.7; color: var(--text-main); margin-bottom: 10px; }
+        .preview-content .md-blockquote { border-left: 4px solid #cbd5e1; background: #f8fafc; padding: 8px 12px; margin: 10px 0; color: #475569; border-radius: 0 4px 4px 0; font-size: 12px; }
+        .preview-content .inline-code { background: #f1f5f9; color: #b91c1c; padding: 2px 5px; border-radius: 4px; font-size: 12px; font-family: monospace; border: 1px solid #e2e8f0; }
+        .preview-content .code-block-wrapper { position: relative; background: #1e293b; color: #f8fafc; padding: 14px; border-radius: var(--geo-radius-sm); overflow-x: auto; margin: 12px 0; border: var(--geo-border); }
+        .preview-content .code-lang-badge { position: absolute; top: 6px; right: 10px; font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+        .preview-content .code-block { font-family: Consolas, monospace; font-size: 12px; line-height: 1.5; }
+        .preview-content .md-table-wrap { overflow-x: auto; margin: 12px 0; }
+        .preview-content .md-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .preview-content .md-table th, .preview-content .md-table td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+        .preview-content .md-table th { background: #f1f5f9; font-weight: 700; }
+        .preview-content .markdown-hr { border: none; border-top: 2px dashed #cbd5e1; margin: 16px 0; }
+        .preview-content .task-item { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-bottom: 6px; }
+        .preview-content .task-box { font-weight: bold; color: var(--primary-accent); }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部状态导航头 -->
+    <header class="app-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="btn-back-home" class="btn-icon" title="返回笔记共享广场">‹</button>
+            <div>
+                <div class="brand-title" style="font-size: 15px;">新建 Markdown 笔记</div>
+                <div class="brand-sub" style="font-size: 10px;">开源 EasyMDE 引擎驱动 · 实时渲染</div>
+            </div>
+        </div>
+        <button id="btn-publish-note" class="btn-glass" style="background: var(--primary-accent); color: #ffffff; border-color: var(--border-dark);">
+            发布笔记
+        </button>
+    </header>
+
+    <div class="editor-container">
+
+        <!-- 笔记元数据设置卡片 -->
+        <div class="feed-card" style="margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label>笔记标题 *</label>
+                <input type="text" id="input-note-title" placeholder="例如：计算机网络考点精简归纳 / Java 核心实训" required style="font-weight: 700; font-size: 14px;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label>所属学科分类 *</label>
+                    <select id="input-note-category">
+                        <option value="专业必修">专业必修</option>
+                        <option value="基础学科">基础学科</option>
+                        <option value="技术拓展">技术拓展</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label>检索标签 (空格分隔)</label>
+                    <input type="text" id="input-note-tags" placeholder="例如: TCP 算法 期末重点">
+                </div>
+            </div>
+        </div>
+
+        <!-- 开源 Markdown 核心宿主容器 -->
+        <textarea id="markdown-editor-target"></textarea>
+
+    </div>
+
+    <!-- 业务与开源脚本引入 -->
+    <script src="js/bridge.js"></script>
+    <script src="js/data.js"></script>
+    <!--
+      开源库引用声明:
+      1. marked.min.js: https://github.com/markedjs/marked (MIT License)
+      2. easymde.js: https://github.com/Ionaru/easy-markdown-editor (MIT License)
+    -->
+    <script src="libs/marked.min.js"></script>
+    <script src="libs/easymde.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 路由鉴权：未登录强制返回登录页
+            const currentUser = DataManager.getCurrentUser();
+            if (!currentUser || !currentUser.isLoggedIn) {
+                JSBridge.showToast('请先登录账号后再写笔记');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const inputTitle = document.getElementById('input-note-title');
+            const selectCategory = document.getElementById('input-note-category');
+            const inputTags = document.getElementById('input-note-tags');
+
+            // 预填范例 Markdown 模板
+            const initialContent = `# 新建课堂笔记\n\n## 1. 核心知识要点\n这里写下本节课的重要定义与公式。\n\n- **关键概念 1**：说明与例证\n- **关键概念 2**：算法或代码实现\n\n\`\`\`javascript\n// 核心实现代码\nfunction helloWorld() {\n    console.log("Hello Smart Campus!");\n}\n\`\`\`\n\n> 考试提醒：该知识点常作为期末分析大题出题。\n`;
+
+            // 初始化成熟开源 Markdown 编辑器 (EasyMDE)
+            const easyMDE = new EasyMDE({
+                element: document.getElementById('markdown-editor-target'),
+                initialValue: initialContent,
+                placeholder: '使用 Markdown 语法书写笔记，支持标题 #、粗体 **、引用 >、代码块 ``` 等...',
+                sideBySide: window.innerWidth >= 768 // 平板或宽屏默认开启实时分栏
+            });
+
+            // 返回按钮：确保返回至笔记共享广场页面（index.html?tab=notes），而非课程表页面
+            document.getElementById('btn-back-home').addEventListener('click', () => {
+                if (confirm('确认放弃当前编辑并返回笔记广场？')) {
+                    window.location.href = 'index.html?tab=notes';
+                }
+            });
+
+            // 发布笔记
+            document.getElementById('btn-publish-note').addEventListener('click', async () => {
+                const title = inputTitle.value.trim();
+                const category = selectCategory.value;
+                const tagsStr = inputTags.value.trim();
+                const content = easyMDE.getValue().trim();
+
+                if (!title) {
+                    JSBridge.showToast('请填写笔记标题');
+                    inputTitle.focus();
+                    return;
+                }
+                if (!content) {
+                    JSBridge.showToast('请填写笔记正文内容');
+                    return;
+                }
+
+                const tags = tagsStr ? tagsStr.split(/[\s,，]+/).filter(Boolean) : [category];
+                const notePayload = {
+                    title: title,
+                    category: category,
+                    tags: tags,
+                    content: content,
+                    authorName: currentUser.name,
+                    authorAccount: currentUser.accountNo,
+                    role: currentUser.role
+                };
+
+                // 优先上报服务端并写入数据库
+                try {
+                    const res = await fetch('http://8.220.210.247:3000/api/notes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(notePayload)
+                    });
+                    const resData = await res.json();
+                    if (resData.code === 200 && resData.data && resData.data.id) {
+                        // 仅存 localStorage，不再调 addNote（避免二次提交后端）
+                        const note = {
+                            id: resData.data.id,
+                            title: resData.data.title,
+                            category: resData.data.category,
+                            author: resData.data.authorName,
+                            authorAccount: currentUser.accountNo,
+                            role: currentUser.role,
+                            tags: resData.data.tags,
+                            content: resData.data.content,
+                            time: '刚刚',
+                            likes: 0
+                        };
+                        const stored = localStorage.getItem('campus_notes');
+                        let list = stored ? JSON.parse(stored) : [];
+                        list.unshift(note);
+                        localStorage.setItem('campus_notes', JSON.stringify(list));
+                        JSBridge.showToast('笔记发布成功！');
+                        setTimeout(() => {
+                            window.location.href = `note_detail.html?id=${resData.data.id}`;
+                        }, 400);
+                        return;
+                    }
+                } catch (err) {
+                    console.warn('后端离线，执行本地持久化存储:', err);
+                }
+
+                // 离线环境本地兜底
+                const localNote = await DataManager.addNote({
+                    title: title,
+                    category: category,
+                    author: currentUser.name,
+                    tags: tags,
+                    content: content
+                });
+                JSBridge.showToast('笔记已保存在本地！');
+                setTimeout(() => {
+                    window.location.href = `note_detail.html?id=${localNote[0].id}`;
+                }, 400);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>学生档案与账号管理 - 智慧校园助手</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .manage-body {
+            background: var(--bg-page);
+            min-height: 100vh;
+        }
+
+        .manage-container {
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* 顶部操作区 */
+        .manage-toolbar {
+            background: #ffffff;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-lg);
+            box-shadow: var(--geo-shadow-md);
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .toolbar-search-box {
+            display: flex;
+            flex: 1;
+            min-width: 260px;
+            gap: 8px;
+        }
+
+        .toolbar-input {
+            flex: 1;
+            height: 38px;
+            padding: 0 12px;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-sm);
+            font-size: 13px;
+            font-weight: 700;
+            background: #faf9f6;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .toolbar-input:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .toolbar-select {
+            height: 38px;
+            padding: 0 10px;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            background: #faf9f6;
+            color: var(--text-main);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .manage-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 学生表格卡片 */
+        .table-card {
+            background: #ffffff;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-lg);
+            box-shadow: var(--geo-shadow-md);
+            overflow: hidden;
+        }
+
+        .table-header-bar {
+            padding: 12px 16px;
+            background: #faf9f6;
+            border-bottom: var(--geo-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .student-count-badge {
+            font-size: 11px;
+            font-weight: 800;
+            background: var(--text-main);
+            color: #ffffff;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        /* 桌面端表格视图 */
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        .student-table th {
+            padding: 10px 14px;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            font-weight: 800;
+            border-bottom: var(--geo-border);
+            white-space: nowrap;
+        }
+
+        .student-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            color: var(--text-main);
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        .student-table tr:hover {
+            background: #fafaf9;
+        }
+
+        .cell-account {
+            font-family: monospace;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .cell-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 800;
+            border-radius: 4px;
+            background: #f1f5f9;
+            color: var(--text-main);
+            border: 1px solid #e2e8f0;
+        }
+
+        .table-btn-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .btn-table-action {
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 800;
+            border: 1.5px solid var(--border-dark);
+            border-radius: var(--geo-radius-sm);
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .btn-table-action:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+        }
+
+        .btn-table-action.danger {
+            color: var(--primary-accent);
+            border-color: var(--primary-accent);
+        }
+
+        .btn-table-action.danger:hover {
+            background: #fff5f5;
+        }
+
+        /* 移动端卡片式自适应 */
+        .mobile-card-list {
+            display: none;
+            padding: 12px;
+            gap: 12px;
+            flex-direction: column;
+        }
+
+        .student-item-card {
+            border: 1.5px solid var(--border-dark);
+            border-radius: var(--geo-radius-md);
+            padding: 12px;
+            background: #ffffff;
+            box-shadow: 2px 2px 0px var(--border-dark);
+        }
+
+        .student-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .student-item-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .student-item-account {
+            font-family: monospace;
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 12px;
+        }
+
+        .student-item-info {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .student-item-actions {
+            display: flex;
+            gap: 6px;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 8px;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .table-desktop-view {
+                display: none;
+            }
+            .mobile-card-list {
+                display: flex;
+            }
+            .manage-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .toolbar-search-box {
+                min-width: 100%;
+                flex-direction: column;
+            }
+            .manage-actions {
+                justify-content: flex-end;
+            }
+        }
+
+        /* 模态框通用样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(2px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-lg);
+            box-shadow: 6px 6px 0px var(--border-dark);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            animation: modalPop 0.15s ease-out;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 14px 16px;
+            background: #faf9f6;
+            border-bottom: var(--geo-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .form-input {
+            height: 38px;
+            padding: 0 10px;
+            border: var(--geo-border);
+            border-radius: var(--geo-radius-sm);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+            background: #faf9f6;
+            outline: none;
+        }
+
+        .form-input:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .form-input:disabled {
+            background: #f1f5f9;
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .modal-footer {
+            padding: 12px 16px;
+            border-top: var(--geo-border);
+            background: #faf9f6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .empty-state {
+            padding: 40px 16px;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body class="manage-body">
+
+    <!-- 顶部固定导航 -->
+    <header class="chat-custom-navbar" style="background:#ffffff; border-bottom:var(--geo-border); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button onclick="window.location.href='admin_dashboard.html'" class="btn-geo" style="padding:6px 12px; font-size:12px; background:#ffffff;">‹ 返回控制台</button>
+            <h1 style="font-size:15px; font-weight:800; margin:0; color:var(--text-main);">学生档案与账号管理</h1>
+        </div>
+        <div>
+            <span id="adminBadge" class="cell-tag" style="background:#2D3142; color:#ffffff; font-weight:800;">管理员</span>
+        </div>
+    </header>
+
+    <div class="manage-container">
+        <!-- 工具栏 -->
+        <div class="manage-toolbar">
+            <div class="toolbar-search-box">
+                <input type="text" id="searchInput" class="toolbar-input" placeholder="输入学号、姓名或班级检索..." oninput="handleSearch()">
+                <select id="collegeFilter" class="toolbar-select" onchange="handleSearch()">
+                    <option value="">全部学院</option>
+                </select>
+            </div>
+            <div class="manage-actions">
+                <button onclick="openAddStudentModal()" class="btn-geo primary" style="padding:8px 14px; font-size:12px; display:flex; align-items:center; gap:4px;">
+                    <span>+</span> 添加学生
+                </button>
+                <button onclick="loadStudentList()" class="btn-geo" style="padding:8px 12px; font-size:12px;" title="刷新数据">
+                    刷新
+                </button>
+            </div>
+        </div>
+
+        <!-- 数据表格卡片 -->
+        <div class="table-card">
+            <div class="table-header-bar">
+                <span>学生名单总览 (数据源: students.xlsx)</span>
+                <span id="studentTotalBadge" class="student-count-badge">共 0 人</span>
+            </div>
+
+            <!-- 桌面端大屏表格 -->
+            <div class="table-desktop-view">
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">学号</th>
+                            <th style="width: 100px;">姓名</th>
+                            <th>所属学院</th>
+                            <th>专业名称</th>
+                            <th style="width: 90px;">年级</th>
+                            <th>行政班级</th>
+                            <th style="width: 170px; text-align: right;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <tr><td colspan="7" class="empty-state">正在加载学生数据...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 移动端自适应卡片列表 -->
+            <div id="mobileStudentList" class="mobile-card-list">
+                <div class="empty-state">正在加载学生数据...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 1：添加新学生 -->
+    <div id="addModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span>录入新学生档案</span>
+                <button class="modal-close-btn" onclick="closeAddModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">学号 (唯一账号标识) *</label>
+                    <input type="text" id="addAccountNo" class="form-input" placeholder="例如: 260205" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">学生姓名 *</label>
+                    <input type="text" id="addName" class="form-input" placeholder="例如: 张晓明" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">初始登录密码 (留空默认为 123456)</label>
+                    <input type="password" id="addPassword" class="form-input" placeholder="默认 123456">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">所属学院</label>
+                    <input type="text" id="addCollege" class="form-input" placeholder="例如: 信息技术学院" value="信息技术学院">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">所学专业</label>
+                    <input type="text" id="addMajor" class="form-input" placeholder="例如: 软件技术" value="软件技术(移动互联方向)">
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">年级</label>
+                        <input type="text" id="addGrade" class="form-input" placeholder="例如: 2024级" value="2024级">
+                    </div>
+                    <div class="form-group" style="flex:1.2;">
+                        <label class="form-label">行政班级</label>
+                        <input type="text" id="addClassGrade" class="form-input" placeholder="例如: 软件2401班" value="软件2401班">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeAddModal()" class="btn-geo" style="padding:6px 12px; font-size:12px;">取消</button>
+                <button onclick="submitAddStudent()" class="btn-geo primary" style="padding:6px 16px; font-size:12px;">确认录入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 2：修改学生档案 -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span>编辑学生档案资料</span>
+                <button class="modal-close-btn" onclick="closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">学号 (主键不可改)</label>
+                    <input type="text" id="editAccountNo" class="form-input" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">学生姓名 *</label>
+                    <input type="text" id="editName" class="form-input" placeholder="姓名">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">所属学院</label>
+                    <input type="text" id="editCollege" class="form-input" placeholder="学院">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">所学专业</label>
+                    <input type="text" id="editMajor" class="form-input" placeholder="专业">
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">年级</label>
+                        <input type="text" id="editGrade" class="form-input" placeholder="年级">
+                    </div>
+                    <div class="form-group" style="flex:1.2;">
+                        <label class="form-label">行政班级</label>
+                        <input type="text" id="editClassGrade" class="form-input" placeholder="班级">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeEditModal()" class="btn-geo" style="padding:6px 12px; font-size:12px;">取消</button>
+                <button onclick="submitEditStudent()" class="btn-geo primary" style="padding:6px 16px; font-size:12px;">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 3：重置密码 -->
+    <div id="pwdModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span>重置学生账号密码</span>
+                <button class="modal-close-btn" onclick="closePwdModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="font-size:12px; font-weight:700; color:var(--text-main); background:#faf9f6; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
+                    正在重置学生：<span id="pwdTargetDesc" style="color:var(--primary); font-weight:800;"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">设置新密码 *</label>
+                    <input type="text" id="resetNewPwd" class="form-input" placeholder="请输入新密码" value="123456">
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">默认值为 123456，保存后将自动通过 SHA-256 加密落盘存储。</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closePwdModal()" class="btn-geo" style="padding:6px 12px; font-size:12px;">取消</button>
+                <button onclick="submitResetPwd()" class="btn-geo primary" style="padding:6px 16px; font-size:12px;">确认重置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 基础脚本依赖 -->
+    <script src="js/data.js"></script>
+    <script>
+        // 权限守卫：仅管理员可进入
+        (function guardAuth() {
+            const user = DataManager.getCurrentUser();
+            if (!user || user.role !== 'admin') {
+                alert('您无权访问学生档案管理，请以管理员身份登录！');
+                window.location.href = 'login.html';
+            }
+        })();
+
+        let allStudents = [];
+        let curResetAccount = '';
+
+        // 统一 API 基地址：确保 file:// 协议下也能正确访问后端
+        const API_BASE = 'http://8.220.210.247:3000';
+
+        // 初始化加载
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStudentList();
+        });
+
+        // 获取学生列表
+        async function loadStudentList() {
+            const tbody = document.getElementById('studentTableBody');
+            const mobileList = document.getElementById('mobileStudentList');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="empty-state">正在加载学生数据...</td></tr>';
+            if (mobileList) mobileList.innerHTML = '<div class="empty-state">正在加载学生数据...</div>';
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                const res = await fetch(`${API_BASE}/api/admin/students`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (res.ok) {
+                    const result = await res.json();
+                    if (result.code === 200 && Array.isArray(result.data)) {
+                        allStudents = result.data;
+                        renderColleges();
+                        renderTable(allStudents);
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('[离线/网络异常，尝试本地降级数据]', e);
+            }
+
+            // 离线降级读取 DataManager
+            if (DataManager.getAccounts) {
+                const localStudents = DataManager.getAccounts().filter(a => a.role === 'student');
+                if (localStudents && localStudents.length > 0) {
+                    allStudents = localStudents.map(s => ({
+                        accountNo: s.accountNo,
+                        name: s.name,
+                        college: s.college || '信息技术学院',
+                        major: s.major || '软件技术',
+                        grade: s.grade || '2024级',
+                        classGrade: s.classGrade || '软件2401班'
+                    }));
+                    renderColleges();
+                    renderTable(allStudents);
+                    return;
+                }
+            }
+            renderTable([]);
+        }
+
+        // 渲染学院筛选下拉框
+        function renderColleges() {
+            const select = document.getElementById('collegeFilter');
+            const curVal = select.value;
+            const set = new Set();
+            allStudents.forEach(s => {
+                if (s.college) set.add(s.college);
+            });
+
+            select.innerHTML = '<option value="">全部学院</option>';
+            set.forEach(col => {
+                const opt = document.createElement('option');
+                opt.value = col;
+                opt.textContent = col;
+                select.appendChild(opt);
+            });
+            select.value = curVal;
+        }
+
+        // 搜索与过滤处理
+        function handleSearch() {
+            const kw = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+            const college = document.getElementById('collegeFilter').value;
+
+            const filtered = allStudents.filter(s => {
+                const matchKw = !kw || 
+                    (s.accountNo && s.accountNo.toLowerCase().includes(kw)) ||
+                    (s.name && s.name.toLowerCase().includes(kw)) ||
+                    (s.classGrade && s.classGrade.toLowerCase().includes(kw)) ||
+                    (s.major && s.major.toLowerCase().includes(kw));
+
+                const matchCollege = !college || s.college === college;
+                return matchKw && matchCollege;
+            });
+
+            renderTable(filtered);
+        }
+
+        // 渲染表格与卡片列表
+        function renderTable(list) {
+            const totalBadge = document.getElementById('studentTotalBadge');
+            totalBadge.textContent = `共 ${list.length} 人`;
+
+            const tbody = document.getElementById('studentTableBody');
+            const mobileList = document.getElementById('mobileStudentList');
+
+            if (!list || list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">未找到匹配的学生档案</td></tr>';
+                mobileList.innerHTML = '<div class="empty-state">未找到匹配的学生档案</div>';
+                return;
+            }
+
+            // 1. 桌面端表格渲染
+            let tableHtml = '';
+            // 2. 移动端卡片渲染
+            let mobileHtml = '';
+
+            list.forEach(s => {
+                const safeName = escapeHtml(s.name);
+                const safeAccount = escapeHtml(s.accountNo);
+                const safeCollege = escapeHtml(s.college || '未知学院');
+                const safeMajor = escapeHtml(s.major || '未知专业');
+                const safeGrade = escapeHtml(s.grade || '2024级');
+                const safeClass = escapeHtml(s.classGrade || '未分班');
+
+                tableHtml += `
+                    <tr>
+                        <td class="cell-account">${safeAccount}</td>
+                        <td style="font-weight:800;">${safeName}</td>
+                        <td><span class="cell-tag">${safeCollege}</span></td>
+                        <td>${safeMajor}</td>
+                        <td>${safeGrade}</td>
+                        <td>${safeClass}</td>
+                        <td style="text-align:right;">
+                            <div class="table-btn-group" style="justify-content:flex-end;">
+                                <button class="btn-table-action" onclick="openEditModal('${safeAccount}')">编辑</button>
+                                <button class="btn-table-action" onclick="openPwdModal('${safeAccount}', '${safeName}')">密码</button>
+                                <button class="btn-table-action danger" onclick="confirmDelete('${safeAccount}', '${safeName}')">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                mobileHtml += `
+                    <div class="student-item-card">
+                        <div class="student-item-header">
+                            <span class="student-item-name">${safeName}</span>
+                            <span class="student-item-account">${safeAccount}</span>
+                        </div>
+                        <div class="student-item-info">
+                            <div><strong>学院：</strong>${safeCollege}</div>
+                            <div><strong>专业：</strong>${safeMajor} · ${safeClass}</div>
+                        </div>
+                        <div class="student-item-actions">
+                            <button class="btn-table-action" onclick="openEditModal('${safeAccount}')">编辑资料</button>
+                            <button class="btn-table-action" onclick="openPwdModal('${safeAccount}', '${safeName}')">重设密码</button>
+                            <button class="btn-table-action danger" onclick="confirmDelete('${safeAccount}', '${safeName}')">删除账号</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            tbody.innerHTML = tableHtml;
+            mobileList.innerHTML = mobileHtml;
+        }
+
+        // --- 模态框逻辑 ---
+
+        // 1. 添加学生
+        function openAddStudentModal() {
+            document.getElementById('addAccountNo').value = '';
+            document.getElementById('addName').value = '';
+            document.getElementById('addPassword').value = '';
+            document.getElementById('addModal').style.display = 'flex';
+        }
+        function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+        async function submitAddStudent() {
+            const accountNo = (document.getElementById('addAccountNo').value || '').trim();
+            const name = (document.getElementById('addName').value || '').trim();
+            const password = (document.getElementById('addPassword').value || '').trim();
+            const college = (document.getElementById('addCollege').value || '').trim();
+            const major = (document.getElementById('addMajor').value || '').trim();
+            const grade = (document.getElementById('addGrade').value || '').trim();
+            const classGrade = (document.getElementById('addClassGrade').value || '').trim();
+
+            if (!accountNo || !name) {
+                alert('请填写完整的学号和姓名！');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/students`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ accountNo, name, password, college, major, grade, classGrade })
+                });
+                const result = await res.json();
+                if (result.code === 200) {
+                    alert('录入成功！');
+                    closeAddModal();
+                    loadStudentList();
+                } else {
+                    alert('录入失败: ' + (result.message || '未知错误'));
+                }
+            } catch (e) {
+                alert('操作失败，网络或后端异常: ' + e.message);
+            }
+        }
+
+        // 2. 编辑学生档案
+        function openEditModal(accountNo) {
+            const student = allStudents.find(s => s.accountNo === accountNo);
+            if (!student) return;
+
+            document.getElementById('editAccountNo').value = student.accountNo;
+            document.getElementById('editName').value = student.name || '';
+            document.getElementById('editCollege').value = student.college || '';
+            document.getElementById('editMajor').value = student.major || '';
+            document.getElementById('editGrade').value = student.grade || '';
+            document.getElementById('editClassGrade').value = student.classGrade || '';
+
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        async function submitEditStudent() {
+            const accountNo = document.getElementById('editAccountNo').value;
+            const name = (document.getElementById('editName').value || '').trim();
+            const college = (document.getElementById('editCollege').value || '').trim();
+            const major = (document.getElementById('editMajor').value || '').trim();
+            const grade = (document.getElementById('editGrade').value || '').trim();
+            const classGrade = (document.getElementById('editClassGrade').value || '').trim();
+
+            if (!name) {
+                alert('学生姓名不能为空！');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/students/${encodeURIComponent(accountNo)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, college, major, grade, classGrade })
+                });
+                const result = await res.json();
+                if (result.code === 200) {
+                    alert('档案修改已保存！');
+                    closeEditModal();
+                    loadStudentList();
+                } else {
+                    alert('修改失败: ' + (result.message || '未知错误'));
+                }
+            } catch (e) {
+                alert('操作失败: ' + e.message);
+            }
+        }
+
+        // 3. 重置密码
+        function openPwdModal(accountNo, name) {
+            curResetAccount = accountNo;
+            document.getElementById('pwdTargetDesc').textContent = `${name} (${accountNo})`;
+            document.getElementById('resetNewPwd').value = '123456';
+            document.getElementById('pwdModal').style.display = 'flex';
+        }
+        function closePwdModal() {
+            document.getElementById('pwdModal').style.display = 'none';
+        }
+        async function submitResetPwd() {
+            const newPwd = (document.getElementById('resetNewPwd').value || '').trim();
+            if (!newPwd) {
+                alert('新密码不能为空！');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/students/${encodeURIComponent(curResetAccount)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: newPwd })
+                });
+                const result = await res.json();
+                if (result.code === 200) {
+                    alert(`密码已重置为 [${newPwd}] 并已加密落盘！`);
+                    closePwdModal();
+                } else {
+                    alert('重置失败: ' + (result.message || '未知错误'));
+                }
+            } catch (e) {
+                alert('操作失败: ' + e.message);
+            }
+        }
+
+        // 4. 删除学生
+        async function confirmDelete(accountNo, name) {
+            const confirmed = confirm(`确定要永久删除学生【${name}】(学号: ${accountNo}) 的账号档案吗？\n删除后将无法恢复，且实时同步更新 Excel 表格！`);
+            if (!confirmed) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/students/${encodeURIComponent(accountNo)}`, {
+                    method: 'DELETE'
+                });
+                const result = await res.json();
+                if (result.code === 200) {
+                    alert('学生账号已删除！');
+                    loadStudentList();
+                } else {
+                    alert('删除失败: ' + (result.message || '未知错误'));
+                }
+            } catch (e) {
+                alert('删除失败: ' + e.message);
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
