@@ -326,8 +326,8 @@ const server = http.createServer((req, res) => {
                     id: 'n_' + Date.now(),
                     title: title.trim(),
                     category: category || '专业必修',
-                    authorName: authorName || '在校生',
-                    authorAccount: authorAccount || '260203',
+                    authorName: authorName || '',
+                    authorAccount: authorAccount || '',
                     time: '刚刚',
                     likes: 0,
                     tags: Array.isArray(tags) ? tags : (tags ? String(tags).split(/[\s,，]+/).filter(Boolean) : []),
@@ -445,8 +445,8 @@ const server = http.createServer((req, res) => {
                 const newComment = {
                     id: 'cm_' + Date.now(),
                     noteId: noteId,
-                    authorName: authorName || '在校生',
-                    authorAccount: authorAccount || '260203',
+                    authorName: authorName || '',
+                    authorAccount: authorAccount || '',
                     content: content.trim(),
                     time: '刚刚',
                     createdAt: new Date().toLocaleString()
@@ -529,8 +529,7 @@ const server = http.createServer((req, res) => {
     // 8.1 聊天模块接口：获取全部群聊列表及成员信息 GET /api/chat/groups
     if (pathname === '/api/chat/groups' && req.method === 'GET') {
         const defaultGroups = [
-            { id: 'public', name: '全校公共大厅', type: 'public', creator: 'system', members: ['all'], createdAt: '2026-03-01' },
-            { id: 'g_software_2401', name: '软件高职2401班级群', type: 'class', classGrade: '软件2401班', creator: '114514', members: ['260203'], createdAt: '2026-03-05' }
+            { id: 'public', name: '全校公共大厅', type: 'public', creator: 'system', members: ['all'], createdAt: '2026-03-01' }
         ];
         const groups = readJson(CHAT_GROUPS_FILE, defaultGroups);
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -550,8 +549,7 @@ const server = http.createServer((req, res) => {
                 }
 
                 const defaultGroups = [
-                    { id: 'public', name: '全校公共大厅', type: 'public', creator: 'system', members: ['all'], createdAt: '2026-03-01' },
-                    { id: 'g_software_2401', name: '软件高职2401班级群', type: 'class', classGrade: '软件2401班', creator: '114514', members: ['260203'], createdAt: '2026-03-05' }
+                    { id: 'public', name: '全校公共大厅', type: 'public', creator: 'system', members: ['all'], createdAt: '2026-03-01' }
                 ];
                 const groups = readJson(CHAT_GROUPS_FILE, defaultGroups);
                 const newGroup = {
@@ -559,7 +557,7 @@ const server = http.createServer((req, res) => {
                     name: name.trim(),
                     type: 'custom',
                     creatorAccount: creatorAccount || '',
-                    creatorName: creatorName || '在校同学',
+                    creatorName: creatorName || '',
                     members: Array.isArray(memberAccounts) ? memberAccounts : [],
                     memberNames: Array.isArray(memberNames) ? memberNames : [],
                     createdAt: new Date().toLocaleString()
@@ -619,7 +617,7 @@ const server = http.createServer((req, res) => {
                     targetId: targetId, // 群ID 或 对方账号
                     targetName: targetName,
                     senderAccount: senderAccount || '',
-                    senderName: senderName || '在校生',
+                    senderName: senderName || '',
                     senderRole: senderRole || 'student',
                     avatarText: (senderName || '同').charAt(0),
                     text: text.trim(),
@@ -665,7 +663,7 @@ const server = http.createServer((req, res) => {
                             targetId: msg.targetId || '',
                             targetName: msg.targetName || '',
                             senderAccount: msg.senderAccount || '',
-                            senderName: msg.senderName || msg.sender || '在校生',
+                            senderName: msg.senderName || msg.sender || '',
                             senderRole: msg.senderRole || 'student',
                             avatarText: msg.avatarText || (msg.senderName || msg.sender || '同').charAt(0),
                             text: msg.text || '',
@@ -711,7 +709,7 @@ const server = http.createServer((req, res) => {
                     typeLabel: body.typeLabel || '校园动态',
                     typeColor: body.typeColor || '#4338ca',
                     isPinned: !!body.isPinned,
-                    author: body.author || '在校同学',
+                    author: body.author || '',
                     authorAccount: body.authorAccount || '',
                     role: body.role || 'student',
                     dept: body.dept || '',
@@ -785,7 +783,7 @@ const server = http.createServer((req, res) => {
             if (!Array.isArray(post.comments)) post.comments = [];
             const newComment = {
                 id: 'c_' + Date.now(),
-                user: body.user || '同学',
+                    user: body.user || '',
                 role: body.role || 'student',
                 dept: body.dept || '',
                 time: '刚刚',
@@ -999,10 +997,10 @@ const server = http.createServer((req, res) => {
                 accountNo,
                 passwordHash,
                 name,
-                college: college || '信息技术学院',
-                major: major || '计算机应用技术',
-                grade: grade || '2024级',
-                classGrade: classGrade || '计算2401班'
+                college: college || '',
+                major: major || '',
+                grade: grade || '',
+                classGrade: classGrade || ''
             };
 
             students.push(newStudent);

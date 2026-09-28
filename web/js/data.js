@@ -22,7 +22,7 @@ const PRESET_ACCOUNTS = [
         id: 'acc_stu_1',
         role: 'student',
         accountNo: '260203',
-        password: '123',
+        password: '123456',
         name: '李晨阳',
         college: '信息技术学院',
         major: '软件技术(移动互联方向)',
@@ -31,34 +31,10 @@ const PRESET_ACCOUNTS = [
         avatarText: '李'
     },
     {
-        id: 'acc_stu_classmate_1',
-        role: 'student',
-        accountNo: '260201',
-        password: '123',
-        name: '张宇轩',
-        college: '信息技术学院',
-        major: '软件技术(移动互联方向)',
-        grade: '2024级',
-        classGrade: '软件2401班',
-        avatarText: '张'
-    },
-    {
-        id: 'acc_stu_classmate_2',
-        role: 'student',
-        accountNo: '260202',
-        password: '123',
-        name: '王小敏',
-        college: '信息技术学院',
-        major: '软件技术(移动互联方向)',
-        grade: '2024级',
-        classGrade: '软件2401班',
-        avatarText: '王'
-    },
-    {
         id: 'acc_stu_2',
         role: 'student',
         accountNo: '260204',
-        password: '123',
+        password: '123456',
         name: '苏雨婷',
         college: '商学院',
         major: '电子商务',
@@ -67,22 +43,10 @@ const PRESET_ACCOUNTS = [
         avatarText: '苏'
     },
     {
-        id: 'acc_stu_other_1',
-        role: 'student',
-        accountNo: '260305',
-        password: '123',
-        name: '陈浩然',
-        college: '商学院',
-        major: '国际贸易',
-        grade: '2024级',
-        classGrade: '国贸2401班',
-        avatarText: '陈'
-    },
-    {
         id: 'acc_admin_1',
         role: 'admin',
         accountNo: '114514',
-        password: 'admin',
+        password: 'abcd',
         name: '赵辅导员',
         college: '信息技术学院',
         major: '学生工作办公室',
@@ -218,7 +182,7 @@ const DataManager = {
             id: 'acc_stu_1',
             role: 'student',
             name: '李晨阳',
-            accountNo: '2024090123',
+            accountNo: '260203',
             college: '信息技术学院',
             major: '软件技术(移动互联方向)',
             grade: '2024级',
@@ -643,8 +607,7 @@ const DataManager = {
 
     getChatGroups: function () {
         const defaultGroups = [
-            { id: 'public', name: '全校公共大厅', type: 'public', creator: 'system', members: ['all'] },
-            { id: 'g_software_2401', name: '软件高职2401班级群', type: 'class', classGrade: '软件2401班', creator: '114514', members: ['260201', '260202', '260203'] }
+            { id: 'public', name: '全校公共大厅', type: 'public', creator: 'system', members: ['all'] }
         ];
         const stored = localStorage.getItem(this.CHAT_GROUPS_KEY);
         if (stored) {
