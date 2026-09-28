@@ -23,4 +23,76 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/progressBar" />
 
+    <FrameLayout
+        android:id="@+id/splashOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#8B1A1A"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="山东商业职业技术大学"
+                android:textColor="#D4A843"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginBottom="16dp" />
+
+            <View
+                android:layout_width="60dp"
+                android:layout_height="2dp"
+                android:background="#D4A843"
+                android:layout_marginBottom="32dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="90"
+                android:textColor="#FFFFFF"
+                android:textSize="120sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="建校九十周年"
+                android:textColor="#D4A843"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.12"
+                android:layout_marginTop="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1936 — 2026"
+                android:textColor="#E8C87A"
+                android:textSize="16sp"
+                android:letterSpacing="0.20"
+                android:layout_marginTop="12dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/skipButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:text="跳过 3s"
+            android:textColor="#AAFFFFFF"
+            android:textSize="14sp"
+            android:padding="12dp"
+            android:layout_marginBottom="48dp" />
+
+    </FrameLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

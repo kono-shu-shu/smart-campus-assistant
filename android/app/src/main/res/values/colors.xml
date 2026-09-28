@@ -8,4 +8,8 @@
     <color name="text_main">#0F172A</color>
     <color name="text_muted">#64748B</color>
     <color name="status_green">#10B981</color>
+    <color name="splash_bg">#8B1A1A</color>
+    <color name="splash_gold">#D4A843</color>
+    <color name="splash_white">#FFF8F0</color>
+    <color name="splash_skip">#80FFFFFF</color>
 </resources>

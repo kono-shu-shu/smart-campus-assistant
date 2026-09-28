@@ -5,12 +5,15 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.FrameLayout;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -23,8 +26,11 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView mWebView;
     private ProgressBar mProgressBar;
+    private FrameLayout mSplashOverlay;
+    private TextView mSkipButton;
     private android.webkit.ValueCallback<Uri[]> mFilePathCallback;
     private ActivityResultLauncher<Intent> mFilePickerLauncher;
+    private CountDownTimer mSplashTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         );
 
         initViews();
+        startSplash();
         setupWebView();
         setupBackNavigation();
         loadAppEntry();
@@ -62,6 +69,37 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         mWebView = findViewById(R.id.webView);
         mProgressBar = findViewById(R.id.progressBar);
+        mSplashOverlay = findViewById(R.id.splashOverlay);
+        mSkipButton = findViewById(R.id.skipButton);
+    }
+
+    private void startSplash() {
+        mSplashTimer = new CountDownTimer(3000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                int seconds = (int) Math.ceil(millisUntilFinished / 1000.0);
+                mSkipButton.setText("跳过 " + seconds + "s");
+            }
+
+            @Override
+            public void onFinish() {
+                dismissSplash();
+            }
+        }.start();
+
+        mSkipButton.setOnClickListener(v -> {
+            if (mSplashTimer != null) {
+                mSplashTimer.cancel();
+            }
+            dismissSplash();
+        });
+    }
+
+    private void dismissSplash() {
+        mSplashOverlay.animate()
+            .alpha(0f)
+            .setDuration(300)
+            .withEndAction(() -> mSplashOverlay.setVisibility(View.GONE));
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -160,6 +198,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if (mSplashTimer != null) {
+            mSplashTimer.cancel();
+        }
         if (mWebView != null) {
             mWebView.destroy();
         }
