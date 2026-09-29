@@ -179,16 +179,16 @@ const DataManager = {
             try { return JSON.parse(stored); } catch (e) { }
         }
         const defaultUser = {
-            id: 'acc_stu_1',
-            role: 'student',
-            name: '李晨阳',
-            accountNo: '260203',
-            college: '信息技术学院',
-            major: '软件技术(移动互联方向)',
-            grade: '2024级',
-            classGrade: '软件2401班',
-            avatarText: '李',
-            isLoggedIn: true
+            id: 'guest',
+            role: 'guest',
+            name: '未登录',
+            accountNo: '',
+            college: '山东商业职业技术大学',
+            major: '访客',
+            grade: '',
+            classGrade: '',
+            avatarText: '访',
+            isLoggedIn: false
         };
         this.saveUser(defaultUser);
         return defaultUser;
