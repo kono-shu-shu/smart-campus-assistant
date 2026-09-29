@@ -282,6 +282,26 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // 4.1 笔记点赞/取消点赞：POST /api/notes/:id/like
+    const noteLikeMatch = pathname.match(/^\/api\/notes\/([a-zA-Z0-9_-]+)\/like$/);
+    if (noteLikeMatch && req.method === 'POST') {
+        const noteId = noteLikeMatch[1];
+        const notes = readJson(NOTES_FILE, []);
+        const note = notes.find(n => n.id === noteId);
+        if (!note) {
+            res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ code: 404, message: '笔记不存在' }));
+            return;
+        }
+        note.isLiked = !note.isLiked;
+        note.likes = (note.likes || 0) + (note.isLiked ? 1 : -1);
+        if (note.likes < 0) note.likes = 0;
+        writeJson(NOTES_FILE, notes);
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ code: 200, data: { likes: note.likes, isLiked: note.isLiked } }));
+        return;
+    }
+
     // 4. 获取单篇笔记详情与对应评论：GET /api/notes/:id
     const noteDetailMatch = pathname.match(/^\/api\/notes\/([a-zA-Z0-9_-]+)$/);
     if (noteDetailMatch && req.method === 'GET') {
@@ -330,6 +350,7 @@ const server = http.createServer((req, res) => {
                     authorAccount: authorAccount || '',
                     time: '刚刚',
                     likes: 0,
+                    isLiked: false,
                     tags: Array.isArray(tags) ? tags : (tags ? String(tags).split(/[\s,，]+/).filter(Boolean) : []),
                     content: content,
                     createdAt: new Date().toLocaleString()
@@ -759,12 +780,13 @@ const server = http.createServer((req, res) => {
             res.end(JSON.stringify({ code: 404, message: '帖子不存在' }));
             return;
         }
-        post.likes = (post.likes || 0) + 1;
-        post.isLiked = true;
+        post.isLiked = !post.isLiked;
+        post.likes = (post.likes || 0) + (post.isLiked ? 1 : -1);
+        if (post.likes < 0) post.likes = 0;
         writeJson(WALL_POSTS_FILE, posts);
 
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ code: 200, data: { likes: post.likes, isLiked: true } }));
+        res.end(JSON.stringify({ code: 200, data: { likes: post.likes, isLiked: post.isLiked } }));
         return;
     }
 

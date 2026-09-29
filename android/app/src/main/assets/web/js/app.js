@@ -569,7 +569,7 @@ const App = {
                     </div>
                 ` : ''}
                 <div class="feed-actions" style="margin-top: 12px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
-                    <button class="btn-action" onclick="event.stopPropagation(); JSBridge.showToast('点赞成功')">赞 (${n.likes || 0})</button>
+                    <button class="btn-action ${n.isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); App.likeNote('${n.id}')">赞 (${n.likes || 0})</button>
                     <button class="btn-action" onclick="event.stopPropagation(); window.location.href='note_detail.html?id=${n.id}'">查看全文与研讨</button>
                     <button class="btn-action" onclick="event.stopPropagation(); JSBridge.showToast('已复制笔记分享链接')">分享</button>
                 </div>
@@ -590,6 +590,15 @@ const App = {
             JSBridge.showToast(res.message || '笔记已删除');
         } else {
             JSBridge.showToast(res.message || '删除失败');
+        }
+    },
+
+    likeNote: async function (noteId) {
+        const result = await DataManager.toggleLikeNote(noteId);
+        if (result) {
+            await this.renderNotes();
+        } else {
+            JSBridge.showToast('点赞失败，请检查网络');
         }
     },
 

@@ -456,6 +456,27 @@ const DataManager = {
         return { success: true, message: '笔记已删除' };
     },
 
+    toggleLikeNote: async function (noteId) {
+        try {
+            const res = await fetch(`${API_BASE}/api/notes/${noteId}/like`, { method: 'POST' });
+            if (res.ok) {
+                const json = await res.json();
+                if (json.code === 200) {
+                    const stored = localStorage.getItem(STORAGE_KEYS.NOTES);
+                    let list = stored ? JSON.parse(stored) : [];
+                    const item = list.find(n => n.id === noteId);
+                    if (item) {
+                        item.likes = json.data.likes;
+                        item.isLiked = json.data.isLiked;
+                        localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(list));
+                    }
+                    return json.data;
+                }
+            }
+        } catch (e) { }
+        return null;
+    },
+
     // 校园墙管理（后端优先，本地降级）
     getPresetImages: function () {
         return CAMPUS_PRESET_IMAGES;
@@ -507,23 +528,24 @@ const DataManager = {
     },
 
     toggleLikePost: async function (postId) {
-        const stored = localStorage.getItem(STORAGE_KEYS.WALL_POSTS);
-        let list = stored ? JSON.parse(stored) : [...DEFAULT_POSTS];
-        const item = list.find(p => p.id === postId);
-        if (item) {
-            item.isLiked = !item.isLiked;
-            item.likes += (item.isLiked ? 1 : -1);
-            localStorage.setItem(STORAGE_KEYS.WALL_POSTS, JSON.stringify(list));
-        }
         try {
-            if (item && item.isLiked) {
-                await fetch(`${API_BASE}/api/posts/${postId}/like`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+            const res = await fetch(`${API_BASE}/api/posts/${postId}/like`, { method: 'POST' });
+            if (res.ok) {
+                const json = await res.json();
+                if (json.code === 200) {
+                    const stored = localStorage.getItem(STORAGE_KEYS.WALL_POSTS);
+                    let list = stored ? JSON.parse(stored) : [];
+                    const item = list.find(p => p.id === postId);
+                    if (item) {
+                        item.likes = json.data.likes;
+                        item.isLiked = json.data.isLiked;
+                        localStorage.setItem(STORAGE_KEYS.WALL_POSTS, JSON.stringify(list));
+                    }
+                    return json.data;
+                }
             }
         } catch (e) { }
-        return list;
+        return null;
     },
 
     addComment: async function (postId, commentPayload) {
